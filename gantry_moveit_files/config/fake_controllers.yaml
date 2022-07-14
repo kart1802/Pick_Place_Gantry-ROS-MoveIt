@@ -1,0 +1,11 @@
+controller_list:
+  - name: fake_Gantry_controller
+    type: $(arg fake_execution_type)
+    joints:
+      - X_Joint
+      - Y_Joint
+      - Z_Joint
+      - Z_Rot_Joint
+initial:  # Define initial robot poses per group
+  - group: Gantry
+    pose: rest
