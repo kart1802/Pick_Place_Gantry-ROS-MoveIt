@@ -568,6 +568,7 @@
             <robotNamespace>/</robotNamespace>
         </plugin>
     </gazebo>
+
 </robot>
 
 

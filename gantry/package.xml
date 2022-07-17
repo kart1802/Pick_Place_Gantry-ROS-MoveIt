@@ -10,6 +10,14 @@ for Gantry robot</p>
   <maintainer email="TODO@email.com" />
   <license>BSD</license>
   <buildtool_depend>catkin</buildtool_depend>
+  <build_export_depend>rospy</build_export_depend>
+  <depend>octomap</depend>
+  <depend>message_generation</depend>
+  <depend>message_runtime</depend>
+  <depend>roscpp</depend>
+  <depend>std_msgs</depend>
+  <depend>actionlib</depend>
+  <depend>geometry_msgs</depend>
   <depend>roslaunch</depend>
   <depend>robot_state_publisher</depend>
   <depend>rviz</depend>
