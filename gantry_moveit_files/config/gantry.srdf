@@ -33,7 +33,7 @@
     <group_state name="pick" group="Gantry">
         <joint name="X_Joint" value="0.3721"/>
         <joint name="Y_Joint" value="0.2939"/>
-        <joint name="Z_Joint" value="-0.2"/>
+        <joint name="Z_Joint" value="0.075"/>
         <joint name="Z_Rot_Joint" value="1.5787"/>
     </group_state>
     <group_state name="mid" group="Gantry">
@@ -45,7 +45,7 @@
     <group_state name="place" group="Gantry">
         <joint name="X_Joint" value="-0.45"/>
         <joint name="Y_Joint" value="-0.3558"/>
-        <joint name="Z_Joint" value="-0.2"/>
+        <joint name="Z_Joint" value="0.075"/>
         <joint name="Z_Rot_Joint" value="1.5787"/>
     </group_state>
     <!--END EFFECTOR: Purpose: Represent information about an end effector.-->
