@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<robot name="conveyor_belt">
+<robot name="conveyor_belt2">
 
 <!-- conveyor belt is just a long flat box for objects to slide on it -->
 
@@ -10,7 +10,7 @@
 	<joint name="fixed" type="fixed">
 		<parent link="world"/>
 		<child link="belt_visual"/>
-		<origin xyz="0.9 -0.375 0.0" rpy="0.0 0.0 -1.5708"/>
+		<origin xyz="0.9 0.325 0.0" rpy="0.0 0.0 -1.5708"/>
 	</joint>
 	
 
@@ -79,7 +79,66 @@
 			</geometry>
 		</collision>
 	</link>
+	<link name="Big_box">
+        
+	<inertial>
+            <origin xyz="-2.6593E-06 5.7892E-06 0.0070718" rpy="0 0 0" />
+            <mass value="0.0020128" />
+            <inertia ixx="6.7515E-08" ixy="-2.2805E-12" ixz="1.831E-12" iyy="6.7541E-08" iyz="-9.4715E-13" izz="6.9139E-08" />
+        </inertial>
 
+        <visual>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="package://gantry/meshes/Big_box.dae" />
+            </geometry>
+            <material name="">
+                <color rgba="0.79216 0.81961 0.93333 1" />
+            </material>
+        </visual>
+        <collision>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="package://gantry/meshes/Big_box.dae" />
+            </geometry>
+        </collision>
+    </link>
+    <joint name="Big_box_Joint" type="fixed">
+        <origin xyz="0.4 0.325 0.69" rpy="0 -1.5708 1.5708" />
+        <parent link="world" />
+        <child link="Big_box" />
+        <axis xyz="0 0 1" />
+    </joint>
+	<link name="Big_box2">
+        
+	<inertial>
+            <origin xyz="-2.6593E-06 5.7892E-06 0.0070718" rpy="0 0 0" />
+            <mass value="0.0020128" />
+            <inertia ixx="6.7515E-08" ixy="-2.2805E-12" ixz="1.831E-12" iyy="6.7541E-08" iyz="-9.4715E-13" izz="6.9139E-08" />
+        </inertial>
+
+        <visual>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="package://gantry/meshes/Big_box.dae" />
+            </geometry>
+            <material name="">
+                <color rgba="0.79216 0.81961 0.93333 1" />
+            </material>
+        </visual>
+        <collision>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="package://gantry/meshes/Big_box.dae" />
+            </geometry>
+        </collision>
+    </link>
+    <joint name="Big_box_Joint2" type="fixed">
+        <origin xyz="-0.275 0.325 0.69" rpy="0 -1.5708 1.5708" />
+        <parent link="world" />
+        <child link="Big_box2" />
+        <axis xyz="0 0 1" />
+    </joint>
     <gazebo>
      <plugin name="conveyor_belt_plugin" filename="libROSConveyorBeltPlugin.so">
         <robot_namespace>/</robot_namespace>
