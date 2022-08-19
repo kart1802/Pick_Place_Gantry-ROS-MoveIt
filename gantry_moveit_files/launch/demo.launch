@@ -1,3 +1,4 @@
+<?xml version="1.0" ?>
 <launch>
 
   <!-- specify the planning pipeline -->
@@ -60,6 +61,9 @@
     <arg name="rviz_config" value="$(dirname)/moveit.rviz"/>
     <arg name="debug" value="$(arg debug)"/>
   </include>
+ 
+  <node pkg="gantry_moveit_files" type="gantry_moveit_files" name="move_group_interface_tutorial"  respawn="false" output="screen"/>
+  <!--<node pkg="gantry_moveit_files" type="image_test.py" name="image_test" output="screen"/>-->
 
   <!-- If database loading was enabled, start mongodb as well -->
   <!--<include file="$(dirname)/default_warehouse_db.launch" if="$(arg db)">
