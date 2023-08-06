@@ -10,20 +10,23 @@ from std_msgs.msg import *
 import numpy as np
 import math, time
 import sys
-# from GetBoolVal.srv import *
+from gantry_moveit_files.srv import *
 # from ConveyorBeltControl.srv import *
 
 stop = False 
 power = 0.5
+i=0
 
-# def get_bool_val_client(stop):
-#     rospy.wait_for_service('get_bool_val')
-#     try:
-#         get_bool_val = rospy.ServiceProxy('get_bool_val', GetBoolVal)
-#         resp1 = get_bool_val(stop)
-#         return resp1.res
-#     except rospy.ServiceException as e:
-#         print("Service call failed: %s"%e)
+def get_bool_val_client(stop):
+    rospy.wait_for_service('get_bool_val')
+    try:
+        get_bool_val = rospy.ServiceProxy('get_bool_val', GetBoolVal)
+
+        resp1 = get_bool_val(stop)
+        print("Success!!!!!! \n")
+        return resp1.res
+    except rospy.ServiceException as e:
+        print("Service call failed: %s"%e)
 
 # def power_client(stop):
 #     rospy.wait_for_service('gazebo_conveyor/ConveyorBeltControl')
@@ -36,7 +39,7 @@ power = 0.5
 
 
 def callback_state(msg):
-    global stop
+    global stop,i
     range_val = msg.ranges[0]
     try:
         scan = rospy.Publisher("/box/scan", Bool, queue_size =10)
@@ -44,9 +47,16 @@ def callback_state(msg):
         print(Exception)
     
     if range_val < 0.7:
-        stop = True
-        power = 0.0
+        if i == 0:
+            # print("helo")
+            stop = True
+            power = 0.0
+            resp = get_bool_val_client(stop)
+            if resp == True :
+                i = 1
+        # print(resp)
     else:
+        i = 0
         stop = False
         power = 0.5
     # resp = get_bool_val_client(stop)
@@ -58,12 +68,13 @@ def callback_state(msg):
 
 
 
-    print(range_val)
+    # print(range_val)
 
 def receive_message():
 
     global camera_wrt_origin
     rospy.init_node('data_accept', anonymous=True)
+    # rospy.Service('get_bool_val', GetBoolVal, callback)
     tfBuffer = tf2_ros.Buffer()
     listener = tf2_ros.TransformListener(tfBuffer) 
     rate = rospy.Rate(20.0)
@@ -77,8 +88,8 @@ def receive_message():
     while not rospy.is_shutdown():
         try:
             rospy.Subscriber('/cam_on_laser/scan', LaserScan, callback_state)
-        except (tf2_ros.LookupException, tf2_ros.ConnectivityException, tf2_ros.ExtrapolationException):
             rate.sleep()
+        except (tf2_ros.LookupException, tf2_ros.ConnectivityException, tf2_ros.ExtrapolationException):
             continue
 
 

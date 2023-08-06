@@ -63,7 +63,7 @@ const double tau = 2 * M_PI;
 std::vector<double> coord;
 float n[6];
 float m[9];
-bool a;
+bool a = false;
 
 void openGripper(trajectory_msgs::JointTrajectory& posture)
 {
@@ -266,13 +266,28 @@ void chatterCallback_mono(const std_msgs::Float64MultiArray::ConstPtr& data)
   }
 }
 
-void scanCallback(const std_msgs::Bool::ConstPtr& data)
-{
-  a = data->data;
+// void scanCallback(const std_msgs::Bool::ConstPtr& data)
+// {
+//   a = data->data;
+//   // std::cout<<a;
   
-  
+// }
+
+bool detectionCallback(gantry_moveit_files::GetBoolVal::Request &req, gantry_moveit_files::GetBoolVal::Response &res){
+  res.res = req.a; 
+  a = res.res;
+  std::cout<<a;
+  return a;
 }
 
+  //  4 bool add(beginner_tutorials::AddTwoInts::Request  &req,
+  //  5          beginner_tutorials::AddTwoInts::Response &res)
+  //  6 {
+  //  7   res.sum = req.a + req.b;
+  //  8   ROS_INFO("request: x=%ld, y=%ld", (long int)req.a, (long int)req.b);
+  //  9   ROS_INFO("sending back response: [%ld]", (long int)res.sum);
+  // 10   return true;
+  // 11 }
 
 int main(int argc, char** argv)
 {
@@ -384,6 +399,7 @@ int main(int argc, char** argv)
   
   // while(1){
   visual_tools.prompt("Press 'next' in the RvizVisualToolsGui window to start the demo");
+  ros::ServiceServer service = node_handle.advertiseService("get_bool_val", detectionCallback);
   ros::ServiceClient client = node_handle.serviceClient<gazebo_conveyor::ConveyorBeltControl>("/conveyor/control");
   gazebo_conveyor::ConveyorBeltControl conveyor;
 
@@ -412,13 +428,12 @@ int main(int argc, char** argv)
   // Start the demo
   // ^^^^^^^^^^^^^^^^^^^^^^^^^
   // visual_tools.prompt("Press 'next' in the RvizVisualToolsGui window to start the demo");
-  
-  while(1){
-    // ros::ServiceClient client = node_handle.serviceClient<gazebo_conveyor::ConveyorBeltControl>("/conveyor/control");
-    // gazebo_conveyor::ConveyorBeltControl conveyor;
 
-    ros::Subscriber scan_sub = node_handle.subscribe("/box/scan", 1000, scanCallback);
-    if (a == true){
+  while(1){
+    ros::ServiceClient client = node_handle.serviceClient<gazebo_conveyor::ConveyorBeltControl>("/conveyor/control");
+    gazebo_conveyor::ConveyorBeltControl conveyor;
+    // ros::ServiceServer service = node_handle.advertiseService("get_bool_val", detectionCallback);
+    if (a == 1){
       conveyor.request.power = 0.0;
       if (client.call(conveyor))
       {
@@ -438,15 +453,61 @@ int main(int argc, char** argv)
       }
 
     }
-
   }
-  ros::Duration(1).sleep();
+  
+  // while(1){
+  //   // ros::ServiceClient client = node_handle.serviceClient<gazebo_conveyor::ConveyorBeltControl>("/conveyor/control");
+  //   // gazebo_conveyor::ConveyorBeltControl conveyor;
+
+  //   ros::Subscriber scan_sub = node_handle.subscribe("/box/scan", 1000, scanCallback);
+  //   // std::cout<<a;
+  //   if (a == true){
+  //     conveyor.request.power = 0.0;
+  //     if (client.call(conveyor))
+  //     {
+  //       ROS_INFO("Success!!!!!!!!!!!!!!!!!!!!!!!!");
+  //     }
+  //     else
+  //     {
+  //       ROS_ERROR("Failed to call service conveyor_server");
+  //       return 1;
+  //     }
+      
+  //     if(conveyor.response.success == true){
+  //       break;
+  //     }
+  //     else{
+  //       continue;
+  //     }
+
+  //   }
+
+  // }
+  ros::Duration(0.5).sleep();
   // ros::ServiceClient client = node_handle.serviceClient<gazebo_conveyor::ConveyorBeltControl>("/conveyor/control");
   // gazebo_conveyor::ConveyorBeltControl conveyor;
   conveyor.request.power = 0.5;
-  
-  // ros::ServiceServer service = node_handle.advertiseService("get_bool_val", gbv);
 
+  if (client.call(conveyor))
+  {
+    ROS_INFO("Success!!!!!!!!!!!!!!!!!!!!!!!!!!");
+  }
+  else
+  {
+    ROS_ERROR("Failed to call service conveyor_server");
+    return 1;
+  }
+
+  if(conveyor.response.success == true){
+    ROS_INFO("HO GAYA BHAI!!!!!!!!!!!!!!!!!!!");
+    // break;
+  }
+  else{
+    ROS_ERROR("NAHI HUA BHAI :(");
+    // continue;
+  } 
+
+  // ros::spin();
   visual_tools.prompt("Press 'next' in the RvizVisualToolsGui window to start the demo");
 
   //Adding Table Collision Object

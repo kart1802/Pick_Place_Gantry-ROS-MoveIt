@@ -55,8 +55,8 @@ include_directories(${THIS_PACKAGE_INCLUDE_DIRS})
 include_directories(SYSTEM ${catkin_INCLUDE_DIRS} ${Boost_INCLUDE_DIR} ${EIGEN3_INCLUDE_DIRS})
 
 add_executable(gantry_moveit_files src/move_group_interface_tutorial.cpp)
-install(DIRECTORY launch src DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
+install(DIRECTORY config launch src srv DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
   PATTERN "setup_assistant.launch" EXCLUDE)
 target_link_libraries(gantry_moveit_files ${catkin_LIBRARIES} ${Boost_LIBRARIES})
 install(TARGETS gantry_moveit_files DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
-install(DIRECTORY config DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})
+
