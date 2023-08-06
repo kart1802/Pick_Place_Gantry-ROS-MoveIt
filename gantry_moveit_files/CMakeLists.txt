@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.1.3)
 project(gantry_moveit_files)
 
 find_package(catkin REQUIRED COMPONENTS
+
   rospy
   gazebo_msgs
   roscpp
@@ -22,10 +23,20 @@ find_package(catkin REQUIRED COMPONENTS
   tf2_ros
   tf2_eigen
   tf2_geometry_msgs
+  message_generation
+)
+add_service_files(DIRECTORY srv FILES
+  GetBoolVal.srv
 )
 
 find_package(Eigen3 REQUIRED)
 find_package(Boost REQUIRED system filesystem date_time thread)
+
+generate_messages(DEPENDENCIES std_msgs)
+
+catkin_install_python(PROGRAMS src/detection.py 
+  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
 
 catkin_package(
   LIBRARIES

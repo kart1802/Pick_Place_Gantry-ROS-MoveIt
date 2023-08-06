@@ -26,6 +26,7 @@
   <node name="spawn_gazebo_conveyor" pkg="gazebo_ros" type="spawn_model" args="-urdf -param conveyor -model conveyor_belt $(arg unpause) $(arg world_pose) $(arg initial_joint_positions)" respawn="false" output="screen" />
   <node name="spawn_gazebo_conveyor2" pkg="gazebo_ros" type="spawn_model" args="-urdf -param conveyor2 -model conveyor_belt2 $(arg unpause) $(arg world_pose) $(arg initial_joint_positions)" respawn="false" output="screen" />
   <node name="cube_spawner" pkg="gantry_moveit_files" type="demo.py" output="screen"/>
+  <!-- <node name="detect" pkg="gantry_moveit_files" type="detection.py" output="screen"/> -->
   <!-- Load joint controller parameters for Gazebo -->
   <!--<rosparam file="$(find gantry_moveit_files)/config/gazebo_controllers.yaml" /> -->
   <!-- Spawn Gazebo ROS controllers -->

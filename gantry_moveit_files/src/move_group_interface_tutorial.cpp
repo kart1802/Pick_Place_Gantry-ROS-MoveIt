@@ -54,12 +54,16 @@
 #include<ros/ros.h>
 #include<string.h>
 
+#include "gantry_moveit_files/GetBoolVal.h"
+#include "gazebo_conveyor/ConveyorBeltControl.h"
+
+
 // The circle constant tau = 2*pi. One tau is one rotation in radians.
 const double tau = 2 * M_PI;
 std::vector<double> coord;
 float n[6];
 float m[9];
-
+bool a;
 
 void openGripper(trajectory_msgs::JointTrajectory& posture)
 {
@@ -262,6 +266,14 @@ void chatterCallback_mono(const std_msgs::Float64MultiArray::ConstPtr& data)
   }
 }
 
+void scanCallback(const std_msgs::Bool::ConstPtr& data)
+{
+  a = data->data;
+  
+  
+}
+
+
 int main(int argc, char** argv)
 {
   ros::init(argc, argv, "move_group_interface_tutorial");
@@ -369,8 +381,72 @@ int main(int argc, char** argv)
   pose[0] = 0.015;
   addCollisionObject(planning_scene_interface,pose,orientation_1,size,Planning_group, name[9]);
 
+  
+  // while(1){
+  visual_tools.prompt("Press 'next' in the RvizVisualToolsGui window to start the demo");
+  ros::ServiceClient client = node_handle.serviceClient<gazebo_conveyor::ConveyorBeltControl>("/conveyor/control");
+  gazebo_conveyor::ConveyorBeltControl conveyor;
+
+  conveyor.request.power = 0.5;
+
+  if (client.call(conveyor))
+  {
+    ROS_INFO("Success!!!!!!!!!!!!!!!!!!!!!!!!!!");
+  }
+  else
+  {
+    ROS_ERROR("Failed to call service conveyor_server");
+    return 1;
+  }
+
+  if(conveyor.response.success == true){
+    ROS_INFO("HO GAYA BHAI!!!!!!!!!!!!!!!!!!!");
+    // break;
+  }
+  else{
+    ROS_ERROR("NAHI HUA BHAI :(");
+    // continue;
+  }
+
+  // }
   // Start the demo
   // ^^^^^^^^^^^^^^^^^^^^^^^^^
+  // visual_tools.prompt("Press 'next' in the RvizVisualToolsGui window to start the demo");
+  
+  while(1){
+    // ros::ServiceClient client = node_handle.serviceClient<gazebo_conveyor::ConveyorBeltControl>("/conveyor/control");
+    // gazebo_conveyor::ConveyorBeltControl conveyor;
+
+    ros::Subscriber scan_sub = node_handle.subscribe("/box/scan", 1000, scanCallback);
+    if (a == true){
+      conveyor.request.power = 0.0;
+      if (client.call(conveyor))
+      {
+        ROS_INFO("Success!!!!!!!!!!!!!!!!!!!!!!!!");
+      }
+      else
+      {
+        ROS_ERROR("Failed to call service conveyor_server");
+        return 1;
+      }
+      
+      if(conveyor.response.success == true){
+        break;
+      }
+      else{
+        continue;
+      }
+
+    }
+
+  }
+  ros::Duration(1).sleep();
+  // ros::ServiceClient client = node_handle.serviceClient<gazebo_conveyor::ConveyorBeltControl>("/conveyor/control");
+  // gazebo_conveyor::ConveyorBeltControl conveyor;
+  conveyor.request.power = 0.5;
+  
+  // ros::ServiceServer service = node_handle.advertiseService("get_bool_val", gbv);
+
   visual_tools.prompt("Press 'next' in the RvizVisualToolsGui window to start the demo");
 
   //Adding Table Collision Object
