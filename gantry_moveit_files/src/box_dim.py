@@ -6,6 +6,10 @@ import numpy as np
 from cv_bridge import CvBridge
 import math
 from sensor_msgs.msg import Image
+from geometry_msgs.msg import Quaternion
+from std_msgs.msg import Bool
+
+scan_trigger = False
 
 def detect_coordinate(x, y, w, h, Average_depth,hfov_rad):
   # global Average_depth, x, y, w, h
@@ -30,9 +34,10 @@ def detect_coordinate(x, y, w, h, Average_depth,hfov_rad):
 
 def estimate_depth(depth_image):
 
-
     depth_image_8bit = cv2.cvtColor(depth_image, cv2.COLOR_BGR2GRAY)
-
+    print("Checking image")
+    dim_pub = rospy.Publisher("/box/dim",Quaternion,queue_size=10)
+    dimension = Quaternion()
     min_contour_area = 10
     max_contour_area = 5000
     min_aspect_ratio = 0.8
@@ -43,6 +48,7 @@ def estimate_depth(depth_image):
     w = 0
     h = 0
     Orientation = 0
+    box_height = 0
 
     # depth_image_8bit = np.uint8(depth_image / np.max(depth_image) * 255)
     hsv = cv2.cvtColor(depth_image, cv2.COLOR_BGR2HSV) 
@@ -76,29 +82,48 @@ def estimate_depth(depth_image):
             Orientation_z = Orientation*math.pi/180
             boundRect = cv2.boundingRect(box)
             depth = round(np.average(depth_image_8bit[int(x-1):int(x+1),int(y-1):int(y+1)]),2)/255
-            cv2.rectangle(depth_image_8bit, (int(boundRect[0]), int(boundRect[1])),(int(boundRect[0]+boundRect[2]), int(boundRect[1]+boundRect[3])), color, 1)
+            box_height = 0.40 - depth
+            cv2.drawContours(depth_image_8bit,[box], 0, (0,0,255),1)
+            print(box)
+            # cv2.drawContours(depth_image_8bit,[int(x-1),int(x+1),int(y-1),int(y+1)], 0, (0,0,255),1)
+            # cv2.rectangle(depth_image_8bit, (int(boundRect[0]), int(boundRect[1])),(int(boundRect[0]+boundRect[2]), int(boundRect[1]+boundRect[3])), color, 1)
 
             # Check if the aspect ratio is within the desired range (near square)
             # Print the estimated dimensions
-            rospy.loginfo(f"Detected rectangular object with width: {w} pixels, height: {h} pixels")
+            # rospy.loginfo(f"Detected rectangular object with width: {w} pixels, height: {h} pixels")
     
-    Y_Coordinate, Z_Coordinate, box_height, box_width = detect_coordinate(x, y, w, h, depth, 1.047198) 
-    print(box_height,box_width,depth)
+    Y_Coordinate, Z_Coordinate, box_length, box_width = detect_coordinate(x, y, w, h, depth, 1.0471) 
+    # print(box_length,box_width,depth, Orientation)
+    dimension.x, dimension.y,dimension.z,dimension.w = box_length,box_width,box_height,Orientation
+    print(dimension)
+    dim_pub.publish(dimension)
     cv2.imshow("Depth Image with Boundaries", depth_image_8bit)
     cv2.waitKey(1)
 
 
 def callback_cam(data):
+    global scan_trigger
     bridge = CvBridge()
     depth_image = bridge.imgmsg_to_cv2(data, "bgr8")
-    estimate_depth(depth_image)
+    # print(scan_trigger)
+    if scan_trigger == True :
+      estimate_depth(depth_image)
     # cv2.imshow("Depth Image with Boundaries", depth_image)
     # cv2.waitKey(1)
     # estimate_depth(depth_image)
 
+def callback_scan(data):
+  global scan_trigger
+  if data.data == True and scan_trigger == False:
+    scan_trigger = True
+  elif data.data == False and scan_trigger == True:
+    scan_trigger = False
+
+
 def receive_message():
     rospy.init_node("Box_Dimension")
     rospy.Subscriber("/camera1/image_raw",Image, callback_cam)
+    rospy.Subscriber("/box/scan", Bool, callback_scan)
     rospy.sleep(10)
 
 
