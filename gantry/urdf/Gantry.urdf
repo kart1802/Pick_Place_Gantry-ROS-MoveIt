@@ -666,15 +666,15 @@
     <sensor type="depth" name="camera1">
       <update_rate>30.0</update_rate>
       <camera name="head">
-        <horizontal_fov>1.3962634</horizontal_fov>
+        <horizontal_fov>1.047198</horizontal_fov>
         <image>
           <width>640</width>
           <height>480</height>
           <format>R8G8B8</format>
         </image>
         <clip>
-          <near>0.02</near>
-          <far>1</far>
+          <near>0.0001</near>
+          <far>0.9</far>
         </clip>
         <noise>
           <type>gaussian</type>
@@ -682,7 +682,7 @@
                That pixel's noise value is added to each of its color
                channels, which at that point lie in the range [0,1]. -->
           <mean>0.0</mean>
-          <stddev>0.007</stddev>
+          <stddev>0.000007</stddev>
         </noise>
       </camera>
       <plugin name="camera_controller" filename="libgazebo_ros_openni_kinect.so">
@@ -745,7 +745,7 @@
                stddev of 0.01m will put 99.7% of samples within 0.03m of the true
                reading. -->
           <mean>0.0</mean>
-          <stddev>0.01</stddev>
+          <stddev>0.000001</stddev>
         </noise>
       </ray>
       <plugin name="gazebo_ros_head_laser_controller" filename="libgazebo_ros_laser.so">
