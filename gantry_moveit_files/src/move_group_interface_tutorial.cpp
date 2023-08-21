@@ -507,8 +507,29 @@ int main(int argc, char** argv)
     // continue;
   } 
 
+  ros::Duration(36).sleep();
   // ros::spin();
+  conveyor.request.power = 0.0;
+  if (client.call(conveyor))
+  {
+    ROS_INFO("Success!!!!!!!!!!!!!!!!!!!!!!!!!!");
+  }
+  else
+  {
+    ROS_ERROR("Failed to call service conveyor_server");
+    return 1;
+  }
+
+  if(conveyor.response.success == true){
+    ROS_INFO("HO GAYA BHAI!!!!!!!!!!!!!!!!!!!");
+    // break;
+  }
+  else{
+    ROS_ERROR("NAHI HUA BHAI :(");
+    // continue;
+  } 
   visual_tools.prompt("Press 'next' in the RvizVisualToolsGui window to start the demo");
+  // visual_tools.prompt("Press 'next' in the RvizVisualToolsGui window to start the demo");
 
   //Adding Table Collision Object
   // float pose[] = {0.6,0.0,0.075};

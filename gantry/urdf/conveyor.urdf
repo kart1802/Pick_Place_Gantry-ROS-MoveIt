@@ -86,7 +86,7 @@
         <link>belt_moving</link>
         <update_rate>10</update_rate>
         <power>10</power>
-        <max_velocity>10.2</max_velocity>
+        <max_velocity>10</max_velocity>
      </plugin>
      <mu1>0</mu1>
      <mu2>0</mu2>

@@ -494,7 +494,7 @@
     </joint>
     <link name="Cup">
         
-<inertial>
+        <inertial>
             <origin xyz="-2.6593E-06 5.7892E-06 0.0070718" rpy="0 0 0" />
             <mass value="0.0020128" />
             <inertia ixx="6.7515E-08" ixy="-2.2805E-12" ixz="1.831E-12" iyy="6.7541E-08" iyz="-9.4715E-13" izz="6.9139E-08" />
@@ -555,7 +555,7 @@
   
   <joint name="laser_joint" type="fixed">
     <axis xyz="0 1 0" />
-    <origin xyz="1 -0.375 1.0" rpy="0 1.5708 0"/>
+    <origin xyz="1.75 -0.375 1.0" rpy="0 1.5708 0"/>
     <parent link="world"/>
     <child link="laser_link"/>
   </joint>
@@ -723,7 +723,7 @@
       <pose>0 0 0 0 0 0</pose>
       <always_on>1</always_on>
       <visualize>true</visualize>
-      <update_rate>20</update_rate>
+      <update_rate>5</update_rate>
       <ray>
         <scan>
           <horizontal>
@@ -745,7 +745,7 @@
                stddev of 0.01m will put 99.7% of samples within 0.03m of the true
                reading. -->
           <mean>0.0</mean>
-          <stddev>0.01</stddev>
+          <stddev>0.00001</stddev>
         </noise>
       </ray>
       <plugin name="gazebo_ros_head_laser_controller" filename="libgazebo_ros_laser.so">
