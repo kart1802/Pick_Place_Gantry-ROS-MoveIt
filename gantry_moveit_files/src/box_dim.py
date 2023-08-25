@@ -1,15 +1,17 @@
 #! /usr/bin/env python3
-
-import rospy
-import cv2
+import rospy, tf, rospkg, random,tf2_ros, cv2
 import numpy as np
 from cv_bridge import CvBridge
 import math
 from sensor_msgs.msg import Image
 from geometry_msgs.msg import Quaternion
-from std_msgs.msg import Bool, Float64
+from std_msgs.msg import *
+from sensor_msgs.msg import Image, LaserScan 
+# from DimDataArray.msg import DimDataArray 
 
 scan_trigger = False
+depth_val = [0.0,0.0]
+temp = 0.0
 
 def detect_coordinate(x, y, w, h, Average_depth,hfov_rad):
   # global Average_depth, x, y, w, h
@@ -36,9 +38,10 @@ def estimate_depth(depth_image):
 
     depth_image_8bit = cv2.cvtColor(depth_image, cv2.COLOR_BGR2GRAY)
     # print("Checking image")
-    dim_pub = rospy.Publisher("/box/dim",Quaternion,queue_size=10)
+    dim_pub = rospy.Publisher("/box/dim",Float64MultiArray,queue_size=10)
     len_pub = rospy.Publisher("/box/len",Float64,queue_size=10)
-    dimension = Quaternion()
+    dimension = Float64MultiArray()
+    # dimension_array = DimDataArray()
     min_contour_area = 10
     max_contour_area = 5000
     min_aspect_ratio = 0.8
@@ -53,13 +56,14 @@ def estimate_depth(depth_image):
 
     # depth_image_8bit = np.uint8(depth_image / np.max(depth_image) * 255)
     hsv = cv2.cvtColor(depth_image, cv2.COLOR_BGR2HSV) 
-    min_green = np.array([0,0,0]) 
-    max_green = np.array([102,255,255]) 
+    min_green = np.array([0,100,100]) 
+    max_green = np.array([10,255,255]) 
 
     mask_g = cv2.inRange(hsv, min_green, max_green) 
 
     res_g = cv2.bitwise_and(depth_image,depth_image, mask= mask_g)
-    edges = cv2.Canny(image=res_g, threshold1=85, threshold2=255)
+    # cv2.imshow("RESG",res_g)
+    edges = cv2.Canny(image=res_g, threshold1=0, threshold2=255)
     contours, hierarchy= cv2.findContours(edges, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
     depth = 0
     for contour in contours:
@@ -97,11 +101,13 @@ def estimate_depth(depth_image):
     
     Y_Coordinate, Z_Coordinate, box_length, box_width = detect_coordinate(x, y, w, h, depth, 1.047198) 
     # print(box_length,box_width,depth, Orientation)
-    dimension.x, dimension.y,dimension.z,dimension.w = box_length,box_width,box_height,Orientation
-    # print(x,y)
+    dim = [box_length,box_width,box_height,Orientation]
+    dimension.data = dim
+    print(dimension)
     if 270 < y < 280:
       dim_pub.publish(dimension)
       len_pub.publish(w)
+      print(dimension)
     cv2.imshow("Depth Image with Boundaries", depth_image_8bit)
     cv2.waitKey(1)
 
@@ -125,12 +131,40 @@ def callback_scan(data):
   elif data.data == False and scan_trigger == True:
     scan_trigger = False
 
+def depth_state(msg):
+    global depth_val,temp
+    range_val = msg.ranges[0]
+    try:
+        scan = rospy.Publisher("/depth/scan", Float64, queue_size =10)
+        num = Float64()
+    except(Exception):
+        print(Exception)
+    
+    depth_val[0] = temp
+    depth_val[1] = range_val
+    if range_val < 0.39:
+      d = abs(depth_val[1] - depth_val[0])
+      num.data = d
+      scan.publish(num)
+    else:
+      temp = range_val
+
 
 def receive_message():
     rospy.init_node("Box_Dimension")
     rospy.Subscriber("/camera1/image_raw",Image, callback_cam)
     rospy.Subscriber("/box/scan", Bool, callback_scan)
-    rospy.sleep(10)
+    tfBuffer = tf2_ros.Buffer()
+    listener = tf2_ros.TransformListener(tfBuffer) 
+    rate = rospy.Rate(20.0)
+
+    while not rospy.is_shutdown():
+        try:
+            rospy.Subscriber('/laser/scan', LaserScan, depth_state)
+            rate.sleep()
+        except (tf2_ros.LookupException, tf2_ros.ConnectivityException, tf2_ros.ExtrapolationException):
+            continue
+
 
 
 if __name__ == '__main__':

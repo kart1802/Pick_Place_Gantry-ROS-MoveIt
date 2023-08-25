@@ -674,7 +674,7 @@
         </image>
         <clip>
           <near>0.0001</near>
-          <far>0.9</far>
+          <far>2.9</far>
         </clip>
         <noise>
           <type>gaussian</type>
@@ -745,11 +745,8 @@
                stddev of 0.01m will put 99.7% of samples within 0.03m of the true
                reading. -->
           <mean>0.0</mean>
-<<<<<<< HEAD
+
           <stddev>0.00001</stddev>
-=======
-          <stddev>0.00001</stddev>
->>>>>>> 6716f1fe6bed74bf4129ab021045820acfd6e8c8
         </noise>
       </ray>
       <plugin name="gazebo_ros_head_laser_controller" filename="libgazebo_ros_laser.so">

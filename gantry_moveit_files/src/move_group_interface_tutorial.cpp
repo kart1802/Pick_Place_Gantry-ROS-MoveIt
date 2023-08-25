@@ -41,7 +41,9 @@
 #include <moveit_msgs/DisplayTrajectory.h>
 #include <std_msgs/Float64MultiArray.h>
 #include <std_msgs/Float64.h>
+#include <geometry_msgs/Quaternion.h>
 #include <std_msgs/Bool.h>
+#include <cmath>
 
 #include <moveit_msgs/AttachedCollisionObject.h>
 #include <moveit_msgs/CollisionObject.h>
@@ -61,8 +63,13 @@
 // The circle constant tau = 2*pi. One tau is one rotation in radians.
 const double tau = 2 * M_PI;
 std::vector<double> coord;
+int i =0;
+// float x_val=0.0,y_val=0.0,z_val=0.0,w_val=0.0;
+// float depth[4] = {x_val,y_val,z_val,w_val};
 float n[6];
 float m[9];
+float dim[4];
+float depth;
 bool a = false;
 
 void openGripper(trajectory_msgs::JointTrajectory& posture)
@@ -272,11 +279,29 @@ void chatterCallback_mono(const std_msgs::Float64MultiArray::ConstPtr& data)
 //   // std::cout<<a;
   
 // }
+void boxdimCallback(const std_msgs::Float64MultiArray::ConstPtr &data)
+{
+ 
+  std::vector<double> a = {data->data};
+  for (int i=0;i<4;i++)
+  { 
+    dim[i] = data->data[i];
+  }
+  
+}
+void depthCallback(const std_msgs::Float64::ConstPtr &data)
+{
+ 
+  std::vector<double> a = {data->data};
+  depth = data->data;
+
+  
+}
 
 bool detectionCallback(gantry_moveit_files::GetBoolVal::Request &req, gantry_moveit_files::GetBoolVal::Response &res){
   res.res = req.a; 
   a = res.res;
-  std::cout<<a;
+  // std::cout<<a;
   return a;
 }
 
@@ -303,6 +328,8 @@ int main(int argc, char** argv)
   state.data = 1.0;
 
   ros::Subscriber sub = node_handle.subscribe("/box/Coordinate", 1000, chatterCallback);
+  ros::Subscriber dim_sub = node_handle.subscribe("/box/dim", 1000, boxdimCallback);
+  ros::Subscriber depth_sub = node_handle.subscribe("/depth/scan", 1000, depthCallback);
 
   // ros::Subscriber sub_mono = node_handle.subscribe("/box/Coordinate_mono", 1000, chatterCallback_mono);
   ros::Publisher pub = node_handle.advertise<std_msgs::Float64>("/camera/state", 5);
@@ -316,6 +343,14 @@ int main(int argc, char** argv)
   // We will use the :planning_interface:`PlanningSceneInterface`
   // class to add and remove collision objects in our "virtual world" scene
   moveit::planning_interface::PlanningSceneInterface planning_scene_interface;
+
+  // auto moveit_cpp_ptr = std::make_shared<moveit_cpp::MoveItCpp>(node_handle);
+  // moveit_cpp_ptr->getPlanningSceneMonitorNonConst()->providePlanningSceneService();
+
+  // auto planning_components = std::make_shared<moveit_cpp::PlanningComponent>(PLANNING_GROUP, moveit_cpp_ptr);
+  // auto robot_model_ptr = moveit_cpp_ptr->getRobotModel();
+  // auto robot_start_state = planning_components->getStartState();
+  // auto joint_model_group_ptr = robot_model_ptr->getJointModelGroup(PLANNING_GROUP);
 
   // Raw pointers are frequently used to refer to the planning group for improved performance.
   const moveit::core::JointModelGroup* joint_model_group = move_group_interface.getCurrentState()->getJointModelGroup(PLANNING_GROUP);
@@ -432,6 +467,7 @@ int main(int argc, char** argv)
   while(1){
     ros::ServiceClient client = node_handle.serviceClient<gazebo_conveyor::ConveyorBeltControl>("/conveyor/control");
     gazebo_conveyor::ConveyorBeltControl conveyor;
+    // std::cout<<x_val;
     // ros::ServiceServer service = node_handle.advertiseService("get_bool_val", detectionCallback);
     if (a == 1){
       conveyor.request.power = 0.0;
@@ -484,6 +520,8 @@ int main(int argc, char** argv)
 
   // }
   ros::Duration(0.5).sleep();
+
+
   // ros::ServiceClient client = node_handle.serviceClient<gazebo_conveyor::ConveyorBeltControl>("/conveyor/control");
   // gazebo_conveyor::ConveyorBeltControl conveyor;
   conveyor.request.power = 0.5;
@@ -507,7 +545,27 @@ int main(int argc, char** argv)
     // continue;
   } 
 
+  // while(i<1000){
+  //   for(int j=0;j<=4;j++)
+  //   {
+  //     std::cout << dim[i] << "\t";
+  //   }
+  //   std::cout << "Depth: " << depth;
+  //   std::cout<<std::endl;
+  //   i++;
+  // }
+
+  ROS_INFO("MIL GAYA");
+
+  // ros::Subscriber depth_sub = node_handle.subscribe("/depth/scan", 1000, depthCallback);
+
+
   ros::Duration(36).sleep();
+  for(int j=0;j<=4;j++)
+  {
+    std::cout << dim[i] << "\t";
+  }
+  std::cout << "Depth: " << depth;
   // ros::spin();
   conveyor.request.power = 0.0;
   if (client.call(conveyor))
@@ -528,8 +586,10 @@ int main(int argc, char** argv)
     ROS_ERROR("NAHI HUA BHAI :(");
     // continue;
   } 
-  visual_tools.prompt("Press 'next' in the RvizVisualToolsGui window to start the demo");
   // visual_tools.prompt("Press 'next' in the RvizVisualToolsGui window to start the demo");
+
+  // visual_tools.publishAxisLabeled(robot_start_state->getGlobalLinkTransform("Cup"), "start_pose");
+  // visual_tools.publishText(text_pose, "Start Pose", rvt::WHITE, rvt::XLARGE);
 
   //Adding Table Collision Object
   // float pose[] = {0.6,0.0,0.075};
@@ -545,23 +605,23 @@ int main(int argc, char** argv)
   // size[0] = 0.8;
   // size[1] = 0.4;
   // addCollisionObject(planning_scene_interface,pose,orientation_1,size,Planning_group, name[1]);
-  ROS_INFO_NAMED("tutorial", "Add an object into the world");
+  // ROS_INFO_NAMED("tutorial", "Add an object into the world");
 
   //Getting to position 1 for Monocular Camera Image Processing
   geometry_msgs::Pose target_pose1;
-  tf2Scalar roll = -3.14, pitch = 0, yaw = -1.57;
+  tf2Scalar roll = -3.14, pitch = 0, yaw = 0;
 
   tf2::Quaternion orientation;
   orientation.setRPY(roll, pitch, yaw);
   
   ROS_INFO_NAMED("tutorial", "Add an object into the world_2");
   target_pose1.orientation = tf2::toMsg(orientation);
-  target_pose1.position.x = n[0] - 0.06;
-  target_pose1.position.y = 0;
-  target_pose1.position.z = n[2] + 0.4;
+  target_pose1.position.x = dim[1]*cos(dim[3]);
+  target_pose1.position.y = -0.375;
+  target_pose1.position.z = 0.589 + depth + 0.4;
   move_group_interface.setPoseTarget(target_pose1);
   moveit::planning_interface::MoveGroupInterface::Plan my_plan;
-
+  std::cout<<target_pose1;
   bool success = (move_group_interface.plan(my_plan) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
 
   ROS_INFO_NAMED("tutorial", "Visualizing plan 1 (pose goal) %s", success ? "" : "FAILED");
@@ -578,6 +638,7 @@ int main(int argc, char** argv)
 
   move_group_interface.move();
 
+  visual_tools.prompt("Press 'next' in the RvizVisualToolsGui window to start the demo");
   ros::Subscriber sub_1 = node_handle.subscribe("/box/Coordinate_Mono", 1000, chatterCallback_mono);
 
   // visual_tools.prompt("Press 'next' in the RvizVisualToolsGui window to continue the demo");

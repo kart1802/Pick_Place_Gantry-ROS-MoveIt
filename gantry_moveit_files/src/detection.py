@@ -67,9 +67,9 @@ def callback_state(msg):
     # time.sleep(1)
     # if resp == True:
 
-def tf_callback_state(msg):
-    global stop,i
-    x_translation = msg.transforms[0].transform.translation.x
+# def tf_callback_state(msg):
+#     global stop,i
+#     x_translation = msg.transforms[0].transform.translation.x
     # print(x_translation)
     # try:
     #     scan = rospy.Publisher("/box/scan", Bool, queue_size =10)
@@ -118,7 +118,7 @@ def receive_message():
     while not rospy.is_shutdown():
         try:
             rospy.Subscriber('/cam_on_laser/scan', LaserScan, callback_state)
-            rospy.Subscriber('/tf', TFMessage, tf_callback_state)
+            # rospy.Subscriber('/tf', TFMessage, tf_callback_state)
             rate.sleep()
         except (tf2_ros.LookupException, tf2_ros.ConnectivityException, tf2_ros.ExtrapolationException):
             continue
