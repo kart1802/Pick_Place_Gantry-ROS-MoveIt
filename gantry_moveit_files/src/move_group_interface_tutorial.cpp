@@ -434,70 +434,42 @@ int main(int argc, char** argv)
   
   // while(1){
   visual_tools.prompt("Press 'next' in the RvizVisualToolsGui window to start the demo");
-  ros::ServiceServer service = node_handle.advertiseService("get_bool_val", detectionCallback);
-  ros::ServiceClient client = node_handle.serviceClient<gazebo_conveyor::ConveyorBeltControl>("/conveyor/control");
-  gazebo_conveyor::ConveyorBeltControl conveyor;
+  // ros::ServiceServer service = node_handle.advertiseService("get_bool_val", detectionCallback);
+  // ros::ServiceClient client = node_handle.serviceClient<gazebo_conveyor::ConveyorBeltControl>("/conveyor/control");
+  // gazebo_conveyor::ConveyorBeltControl conveyor;
 
-  conveyor.request.power = 0.5;
+  // conveyor.request.power = 0.5;
 
-  if (client.call(conveyor))
-  {
-    ROS_INFO("Success!!!!!!!!!!!!!!!!!!!!!!!!!!");
-  }
-  else
-  {
-    ROS_ERROR("Failed to call service conveyor_server");
-    return 1;
-  }
-
-  if(conveyor.response.success == true){
-    ROS_INFO("HO GAYA BHAI!!!!!!!!!!!!!!!!!!!");
-    // break;
-  }
-  else{
-    ROS_ERROR("NAHI HUA BHAI :(");
-    // continue;
-  }
-
+  // if (client.call(conveyor))
+  // {
+  //   ROS_INFO("Success!!!!!!!!!!!!!!!!!!!!!!!!!!");
   // }
-  // Start the demo
-  // ^^^^^^^^^^^^^^^^^^^^^^^^^
-  // visual_tools.prompt("Press 'next' in the RvizVisualToolsGui window to start the demo");
+  // else
+  // {
+  //   ROS_ERROR("Failed to call service conveyor_server");
+  //   return 1;
+  // }
 
-  while(1){
-    ros::ServiceClient client = node_handle.serviceClient<gazebo_conveyor::ConveyorBeltControl>("/conveyor/control");
-    gazebo_conveyor::ConveyorBeltControl conveyor;
-    // std::cout<<x_val;
-    // ros::ServiceServer service = node_handle.advertiseService("get_bool_val", detectionCallback);
-    if (a == 1){
-      conveyor.request.power = 0.0;
-      if (client.call(conveyor))
-      {
-        ROS_INFO("Success!!!!!!!!!!!!!!!!!!!!!!!!");
-      }
-      else
-      {
-        ROS_ERROR("Failed to call service conveyor_server");
-        return 1;
-      }
-      
-      if(conveyor.response.success == true){
-        break;
-      }
-      else{
-        continue;
-      }
+  // if(conveyor.response.success == true){
+  //   ROS_INFO("HO GAYA BHAI!!!!!!!!!!!!!!!!!!!");
+  //   // break;
+  // }
+  // else{
+  //   ROS_ERROR("NAHI HUA BHAI :(");
+  //   // continue;
+  // }
 
-    }
-  }
-  
+  // // }
+  // // Start the demo
+  // // ^^^^^^^^^^^^^^^^^^^^^^^^^
+  // // visual_tools.prompt("Press 'next' in the RvizVisualToolsGui window to start the demo");
+
   // while(1){
-  //   // ros::ServiceClient client = node_handle.serviceClient<gazebo_conveyor::ConveyorBeltControl>("/conveyor/control");
-  //   // gazebo_conveyor::ConveyorBeltControl conveyor;
-
-  //   ros::Subscriber scan_sub = node_handle.subscribe("/box/scan", 1000, scanCallback);
-  //   // std::cout<<a;
-  //   if (a == true){
+  //   ros::ServiceClient client = node_handle.serviceClient<gazebo_conveyor::ConveyorBeltControl>("/conveyor/control");
+  //   gazebo_conveyor::ConveyorBeltControl conveyor;
+  //   // std::cout<<x_val;
+  //   // ros::ServiceServer service = node_handle.advertiseService("get_bool_val", detectionCallback);
+  //   if (a == 1){
   //     conveyor.request.power = 0.0;
   //     if (client.call(conveyor))
   //     {
@@ -517,97 +489,125 @@ int main(int argc, char** argv)
   //     }
 
   //   }
-
   // }
-  ros::Duration(0.5).sleep();
+  
+  // // while(1){
+  // //   // ros::ServiceClient client = node_handle.serviceClient<gazebo_conveyor::ConveyorBeltControl>("/conveyor/control");
+  // //   // gazebo_conveyor::ConveyorBeltControl conveyor;
+
+  // //   ros::Subscriber scan_sub = node_handle.subscribe("/box/scan", 1000, scanCallback);
+  // //   // std::cout<<a;
+  // //   if (a == true){
+  // //     conveyor.request.power = 0.0;
+  // //     if (client.call(conveyor))
+  // //     {
+  // //       ROS_INFO("Success!!!!!!!!!!!!!!!!!!!!!!!!");
+  // //     }
+  // //     else
+  // //     {
+  // //       ROS_ERROR("Failed to call service conveyor_server");
+  // //       return 1;
+  // //     }
+      
+  // //     if(conveyor.response.success == true){
+  // //       break;
+  // //     }
+  // //     else{
+  // //       continue;
+  // //     }
+
+  // //   }
+
+  // // }
+  // ros::Duration(0.5).sleep();
 
 
-  // ros::ServiceClient client = node_handle.serviceClient<gazebo_conveyor::ConveyorBeltControl>("/conveyor/control");
-  // gazebo_conveyor::ConveyorBeltControl conveyor;
-  conveyor.request.power = 0.5;
+  // // ros::ServiceClient client = node_handle.serviceClient<gazebo_conveyor::ConveyorBeltControl>("/conveyor/control");
+  // // gazebo_conveyor::ConveyorBeltControl conveyor;
+  // conveyor.request.power = 0.5;
 
-  if (client.call(conveyor))
-  {
-    ROS_INFO("Success!!!!!!!!!!!!!!!!!!!!!!!!!!");
-  }
-  else
-  {
-    ROS_ERROR("Failed to call service conveyor_server");
-    return 1;
-  }
-
-  if(conveyor.response.success == true){
-    ROS_INFO("HO GAYA BHAI!!!!!!!!!!!!!!!!!!!");
-    // break;
-  }
-  else{
-    ROS_ERROR("NAHI HUA BHAI :(");
-    // continue;
-  } 
-
-  // while(i<1000){
-  //   for(int j=0;j<=4;j++)
-  //   {
-  //     std::cout << dim[i] << "\t";
-  //   }
-  //   std::cout << "Depth: " << depth;
-  //   std::cout<<std::endl;
-  //   i++;
+  // if (client.call(conveyor))
+  // {
+  //   ROS_INFO("Success!!!!!!!!!!!!!!!!!!!!!!!!!!");
+  // }
+  // else
+  // {
+  //   ROS_ERROR("Failed to call service conveyor_server");
+  //   return 1;
   // }
 
-  ROS_INFO("MIL GAYA");
+  // if(conveyor.response.success == true){
+  //   ROS_INFO("HO GAYA BHAI!!!!!!!!!!!!!!!!!!!");
+  //   // break;
+  // }
+  // else{
+  //   ROS_ERROR("NAHI HUA BHAI :(");
+  //   // continue;
+  // } 
 
-  // ros::Subscriber depth_sub = node_handle.subscribe("/depth/scan", 1000, depthCallback);
+  // // while(i<1000){
+  // //   for(int j=0;j<=4;j++)
+  // //   {
+  // //     std::cout << dim[i] << "\t";
+  // //   }
+  // //   std::cout << "Depth: " << depth;
+  // //   std::cout<<std::endl;
+  // //   i++;
+  // // }
+
+  // ROS_INFO("MIL GAYA");
+
+  // // ros::Subscriber depth_sub = node_handle.subscribe("/depth/scan", 1000, depthCallback);
 
 
-  ros::Duration(36).sleep();
-  for(int j=0;j<=4;j++)
-  {
-    std::cout << dim[i] << "\t";
-  }
-  std::cout << "Depth: " << depth;
-  // ros::spin();
-  conveyor.request.power = 0.0;
-  if (client.call(conveyor))
-  {
-    ROS_INFO("Success!!!!!!!!!!!!!!!!!!!!!!!!!!");
-  }
-  else
-  {
-    ROS_ERROR("Failed to call service conveyor_server");
-    return 1;
-  }
+  // ros::Duration(36).sleep();
+  // for(int j=0;j<=4;j++)
+  // {
+  //   std::cout << dim[i] << "\t";
+  // }
+  // std::cout << "Depth: " << depth;
+  // // ros::spin();
+  // conveyor.request.power = 0.0;
+  // if (client.call(conveyor))
+  // {
+  //   ROS_INFO("Success!!!!!!!!!!!!!!!!!!!!!!!!!!");
+  // }
+  // else
+  // {
+  //   ROS_ERROR("Failed to call service conveyor_server");
+  //   return 1;
+  // }
 
-  if(conveyor.response.success == true){
-    ROS_INFO("HO GAYA BHAI!!!!!!!!!!!!!!!!!!!");
-    // break;
-  }
-  else{
-    ROS_ERROR("NAHI HUA BHAI :(");
-    // continue;
-  } 
-  // visual_tools.prompt("Press 'next' in the RvizVisualToolsGui window to start the demo");
+  // if(conveyor.response.success == true){
+  //   ROS_INFO("HO GAYA BHAI!!!!!!!!!!!!!!!!!!!");
+  //   // break;
+  // }
+  // else{
+  //   ROS_ERROR("NAHI HUA BHAI :(");
+  //   // continue;
+  // } 
+  // // visual_tools.prompt("Press 'next' in the RvizVisualToolsGui window to start the demo");
 
-  // visual_tools.publishAxisLabeled(robot_start_state->getGlobalLinkTransform("Cup"), "start_pose");
-  // visual_tools.publishText(text_pose, "Start Pose", rvt::WHITE, rvt::XLARGE);
+  // // visual_tools.publishAxisLabeled(robot_start_state->getGlobalLinkTransform("Cup"), "start_pose");
+  // // visual_tools.publishText(text_pose, "Start Pose", rvt::WHITE, rvt::XLARGE);
 
-  //Adding Table Collision Object
-  // float pose[] = {0.6,0.0,0.075};
-  // float orientation_1[] = {0.0,0.0,0.0,1.0};
-  // float size[] = {0.4, 0.8, 0.15};
-  // char name[][20] = {"Table","Table_1","box"};
-  // char Planning_group[] = "base_link";
-  // addCollisionObject(planning_scene_interface,pose,orientation_1,size,Planning_group,name[0]);
+  // //Adding Table Collision Object
+  // // float pose[] = {0.6,0.0,0.075};
+  // // float orientation_1[] = {0.0,0.0,0.0,1.0};
+  // // float size[] = {0.4, 0.8, 0.15};
+  // // char name[][20] = {"Table","Table_1","box"};
+  // // char Planning_group[] = "base_link";
+  // // addCollisionObject(planning_scene_interface,pose,orientation_1,size,Planning_group,name[0]);
 
-  // // Adding Table_1 Collision Object
-  // pose[0] = 0.0;
-  // pose[1] = 0.6;
-  // size[0] = 0.8;
-  // size[1] = 0.4;
-  // addCollisionObject(planning_scene_interface,pose,orientation_1,size,Planning_group, name[1]);
-  // ROS_INFO_NAMED("tutorial", "Add an object into the world");
+  // // // Adding Table_1 Collision Object
+  // // pose[0] = 0.0;
+  // // pose[1] = 0.6;
+  // // size[0] = 0.8;
+  // // size[1] = 0.4;
+  // // addCollisionObject(planning_scene_interface,pose,orientation_1,size,Planning_group, name[1]);
+  // // ROS_INFO_NAMED("tutorial", "Add an object into the world");
 
-  //Getting to position 1 for Monocular Camera Image Processing
+  // //Getting to position 1 for Monocular Camera Image Processing
   geometry_msgs::Pose target_pose1;
   tf2Scalar roll = -3.14, pitch = 0, yaw = 0;
 
@@ -615,26 +615,34 @@ int main(int argc, char** argv)
   orientation.setRPY(roll, pitch, yaw);
   
   ROS_INFO_NAMED("tutorial", "Add an object into the world_2");
-  target_pose1.orientation = tf2::toMsg(orientation);
-  target_pose1.position.x = dim[1]*cos(dim[3]);
-  target_pose1.position.y = -0.375;
-  target_pose1.position.z = 0.589 + depth + 0.4;
-  move_group_interface.setPoseTarget(target_pose1);
+  // target_pose1.orientation = tf2::toMsg(orientation);
+  // target_pose1.position.x = dim[1]*cos(dim[3]);
+  // target_pose1.position.y = -0.375;
+  // target_pose1.position.z = 0.589 + depth + 0.4;
+  // move_group_interface.setPoseTarget(target_pose1);
   moveit::planning_interface::MoveGroupInterface::Plan my_plan;
-  std::cout<<target_pose1;
-  bool success = (move_group_interface.plan(my_plan) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
+  // std::cout<<target_pose1;
+  // bool success = (move_group_interface.plan(my_plan) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
 
-  ROS_INFO_NAMED("tutorial", "Visualizing plan 1 (pose goal) %s", success ? "" : "FAILED");
+  moveit::core::RobotStatePtr current_state = move_group_interface.getCurrentState();
+  std::vector<double> joint_group_positions;
+  current_state->copyJointGroupPositions(joint_model_group, joint_group_positions);
+  joint_group_positions[0] = 1.0; //x
+  joint_group_positions[1] = 0.5; //y
+  joint_group_positions[2] = -0.1; //z
+  joint_group_positions[3] = 0.1; //end-effector
+  move_group_interface.setJointValueTarget(joint_group_positions);
+  move_group_interface.setMaxVelocityScalingFactor(0.05);
+  move_group_interface.setMaxAccelerationScalingFactor(0.05);
 
-  // // Visualizing plans
-  // // ^^^^^^^^^^^^^^^^^
-  // // We can also visualize the plan as a line with markers in RViz.
-  ROS_INFO_NAMED("tutorial", "Visualizing plan 1 as trajectory line");
-  visual_tools.publishAxisLabeled(target_pose1, "pose1");
-  visual_tools.publishText(text_pose, "Pose Goal", rvt::WHITE, rvt::XLARGE);
+  bool success = (move_group_interface.plan(my_plan) == moveit::core::MoveItErrorCode::SUCCESS);
+  ROS_INFO_NAMED("tutorial", "Visualizing plan 2 (joint space goal) %s", success ? "" : "FAILED");
+
+  visual_tools.deleteAllMarkers();
+  visual_tools.publishText(text_pose, "Joint Space Goal", rvt::WHITE, rvt::XLARGE);
   visual_tools.publishTrajectoryLine(my_plan.trajectory_, joint_model_group);
   visual_tools.trigger();
-  // visual_tools.prompt("Press 'next' in the RvizVisualToolsGui window to continue the demo");
+  visual_tools.prompt("Press 'next' in the RvizVisualToolsGui window to continue the demo");
 
   move_group_interface.move();
 
