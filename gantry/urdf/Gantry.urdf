@@ -472,7 +472,7 @@
         <visual>
             <origin xyz="0 0 0" rpy="0 0 0" />
             <geometry>
-                <mesh filename="package://gantry/meshes/Z_Rot.dae" />
+                <mesh filename="package://gantry/meshes/onlyrod.dae" />
             </geometry>
             <material name="">
                 <color rgba="0.79216 0.81961 0.93333 1" />
@@ -481,19 +481,18 @@
         <collision>
             <origin xyz="0 0 0" rpy="0 0 0" />
             <geometry>
-                <mesh filename="package://gantry/meshes/Z_Rot.dae" />
+                <mesh filename="package://gantry/meshes/onlyrod.dae" />
             </geometry>
         </collision>
     </link>
     <joint name="Z_Rot_Joint" type="revolute">
-        <origin xyz="0.08 0 -0.14" rpy="0 0 0" />
+        <origin xyz="0.08 -0.002 -0.14" rpy="0 0 0" />
         <parent link="Z_Motion" />
         <child link="Z_Rot" />
         <axis xyz="0 0 1" />
         <limit lower="-3.14" upper="3.14" effort="5" velocity="1" />
     </joint>
-    <link name="Cup">
-        
+    <link name="Cup">        
         <inertial>
             <origin xyz="-2.6593E-06 5.7892E-06 0.0070718" rpy="0 0 0" />
             <mass value="0.0020128" />
@@ -503,7 +502,7 @@
         <visual>
             <origin xyz="0 0 0" rpy="0 0 0" />
             <geometry>
-                <mesh filename="package://gantry/meshes/Cup.dae" />
+                <mesh filename="package://gantry/meshes/Cup1.dae" />
             </geometry>
             <material name="">
                 <color rgba="0.79216 0.81961 0.93333 1" />
@@ -512,15 +511,16 @@
         <collision>
             <origin xyz="0 0 0" rpy="0 0 0" />
             <geometry>
-                <mesh filename="package://gantry/meshes/Cup.dae" />
+                <mesh filename="package://gantry/meshes/Cup1.dae" />
             </geometry>
         </collision>
     </link>
-    <joint name="Cup_Joint" type="fixed">
-        <origin xyz="-0.0 -0.05 -0.48" rpy="3.1416 -0.0 0" />
+    <joint name="Cup_Joint" type="revolute">
+        <origin xyz="-0.0 -0.002 -0.50" rpy="3.1416 -0.0 0" />
         <parent link="Z_Rot" />
         <child link="Cup" />
         <axis xyz="0 0 1" />
+        <limit lower="-3.14" upper="3.14" effort="5" velocity="1" />
     </joint>
   <joint name="camera_joint" type="fixed">
     <axis xyz="0 1 0" />
@@ -650,6 +650,16 @@
             <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
         </joint>
         <actuator name="Z_Rot_Joint_motor">
+            <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+            <mechanicalReduction>1</mechanicalReduction>
+        </actuator>
+    </transmission>
+    <transmission name="trans_Cup_Joint">
+        <type>transmission_interface/SimpleTransmission</type>
+        <joint name="Cup_Joint">
+            <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+        </joint>
+        <actuator name="Cup_Joint_motor">
             <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
             <mechanicalReduction>1</mechanicalReduction>
         </actuator>

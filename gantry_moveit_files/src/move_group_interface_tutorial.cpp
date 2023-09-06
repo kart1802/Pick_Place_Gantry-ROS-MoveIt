@@ -56,8 +56,20 @@
 #include<ros/ros.h>
 #include<string.h>
 
+#include <pluginlib/class_loader.hpp>
+
+// MoveIt
+#include <moveit/robot_model_loader/robot_model_loader.h>
+#include <moveit/planning_interface/planning_interface.h>
+#include <moveit/planning_scene/planning_scene.h>
+#include <moveit/kinematic_constraints/utils.h>
+#include <moveit_msgs/PlanningScene.h>
+
+#include <boost/scoped_ptr.hpp>
+
 #include "gantry_moveit_files/GetBoolVal.h"
 #include "gazebo_conveyor/ConveyorBeltControl.h"
+#include "gazebo_ros_link_attacher/Attach.h"
 
 
 // The circle constant tau = 2*pi. One tau is one rotation in radians.
@@ -68,6 +80,7 @@ int i =0;
 // float depth[4] = {x_val,y_val,z_val,w_val};
 float n[6];
 float m[9];
+float box_loc[4];
 float dim[4];
 float depth;
 bool a = false;
@@ -131,37 +144,37 @@ void pick(moveit::planning_interface::MoveGroupInterface& move_group, geometry_m
   // Setting pre-grasp approach
   // ++++++++++++++++++++++++++
   /* Defined with respect to frame_id */
-  grasps[0].pre_grasp_approach.direction.header.frame_id = "base_link";
-  /* Direction is set as positive x axis */
-  grasps[0].pre_grasp_approach.direction.vector.z = -1.0;
-  grasps[0].pre_grasp_approach.min_distance = 0.05;
-  grasps[0].pre_grasp_approach.desired_distance = 0.15;
+  // grasps[0].pre_grasp_approach.direction.header.frame_id = "base_link";
+  // /* Direction is set as positive x axis */
+  // grasps[0].pre_grasp_approach.direction.vector.z = -1.0;
+  // grasps[0].pre_grasp_approach.min_distance = 0.05;
+  // grasps[0].pre_grasp_approach.desired_distance = 0.15;
 
-  // Setting post-grasp retreat
-  // ++++++++++++++++++++++++++
-  /* Defined with respect to frame_id */
-  grasps[0].post_grasp_retreat.direction.header.frame_id = "base_link";
-  /* Direction is set as positive z axis */
-  grasps[0].post_grasp_retreat.direction.vector.z = 1.0;
-  grasps[0].post_grasp_retreat.min_distance = 0.0;
-  grasps[0].post_grasp_retreat.desired_distance = 0.0;
+  // // Setting post-grasp retreat
+  // // ++++++++++++++++++++++++++
+  // /* Defined with respect to frame_id */
+  // grasps[0].post_grasp_retreat.direction.header.frame_id = "base_link";
+  // /* Direction is set as positive z axis */
+  // grasps[0].post_grasp_retreat.direction.vector.z = 1.0;
+  // grasps[0].post_grasp_retreat.min_distance = 0.0;
+  // grasps[0].post_grasp_retreat.desired_distance = 0.0;
 
   // Setting posture of eef before grasp
   // +++++++++++++++++++++++++++++++++++
-  openGripper(grasps[0].pre_grasp_posture);
+  // openGripper(grasps[0].pre_grasp_posture);
   // END_SUB_TUTORIAL
 
   // BEGIN_SUB_TUTORIAL pick2
   // Setting posture of eef during grasp
   // +++++++++++++++++++++++++++++++++++
-  closedGripper(grasps[0].grasp_posture);
+  // closedGripper(grasps[0].grasp_posture);
   // END_SUB_TUTORIAL
-  ros::Duration(0.5).sleep();
+  // ros::Duration(0.5).sleep();
   // BEGIN_SUB_TUTORIAL pick3
   // Set support surface as table1.
   move_group.setSupportSurfaceName("Table");
   // Call pick to pick up the object using the grasps given
-  move_group.pick("box", grasps);
+  move_group.pick("cube", grasps);
   // END_SUB_TUTORIAL
 }
 
@@ -289,6 +302,16 @@ void boxdimCallback(const std_msgs::Float64MultiArray::ConstPtr &data)
   }
   
 }
+void boxlocCallback(const std_msgs::Float64MultiArray::ConstPtr &data)
+{
+ 
+  std::vector<double> a = {data->data};
+  for (int i=0;i<4;i++)
+  { 
+    box_loc[i] = data->data[i];
+  }
+  
+}
 void depthCallback(const std_msgs::Float64::ConstPtr &data)
 {
  
@@ -325,6 +348,8 @@ int main(int argc, char** argv)
   ros::AsyncSpinner spinner(1);
   spinner.start();
   std_msgs::Float64 state;
+  std_msgs::Bool grasp_state;
+  grasp_state.data = false;
   state.data = 1.0;
 
   ros::Subscriber sub = node_handle.subscribe("/box/Coordinate", 1000, chatterCallback);
@@ -333,6 +358,7 @@ int main(int argc, char** argv)
 
   // ros::Subscriber sub_mono = node_handle.subscribe("/box/Coordinate_mono", 1000, chatterCallback_mono);
   ros::Publisher pub = node_handle.advertise<std_msgs::Float64>("/camera/state", 5);
+  ros::Publisher state_pub = node_handle.advertise<std_msgs::Bool>("/state", 5);
 
   static const std::string PLANNING_GROUP = "Gantry";
 
@@ -355,6 +381,8 @@ int main(int argc, char** argv)
   // Raw pointers are frequently used to refer to the planning group for improved performance.
   const moveit::core::JointModelGroup* joint_model_group = move_group_interface.getCurrentState()->getJointModelGroup(PLANNING_GROUP);
 
+  move_group_interface.setEndEffectorLink("Cup");
+
   // The package MoveItVisualTools provides many capabilities for visualizing objects, robots,
   // and trajectories in RViz as well as debugging tools such as step-by-step introspection of a script.
   namespace rvt = rviz_visual_tools;
@@ -374,6 +402,7 @@ int main(int argc, char** argv)
   Eigen::Isometry3d text_pose = Eigen::Isometry3d::Identity();
   text_pose.translation().z() = 1.0;
   visual_tools.publishText(text_pose, "MoveGroupInterface Demo", rvt::WHITE, rvt::XLARGE);
+
 
   // Batch publishing is used to reduce the number of messages being sent to RViz for large visualizations
   visual_tools.trigger();
@@ -395,7 +424,7 @@ int main(int argc, char** argv)
   float pose[] = {0.9,-0.375,0.29};
   float orientation_1[] = {0.0,0.0,0.0,1.0};
   float size[] = {3.2, 0.55, 0.58};
-  char name[][20] = {"Table","Table_1","box01","box02","box11","box12","box03","box04","box13","box14"};
+  char name[][20] = {"Table","Table_1","box01","box02","box11","box12","box03","box04","box13","box14","cube"};
   char Planning_group[] = "base_link";
   addCollisionObject(planning_scene_interface,pose,orientation_1,size,Planning_group,name[0]);
 
@@ -431,50 +460,79 @@ int main(int argc, char** argv)
   pose[0] = 0.015;
   addCollisionObject(planning_scene_interface,pose,orientation_1,size,Planning_group, name[9]);
 
+  geometry_msgs::PoseStamped pose1 = move_group_interface.getCurrentPose();
   
   // while(1){
   visual_tools.prompt("Press 'next' in the RvizVisualToolsGui window to start the demo");
-  // ros::ServiceServer service = node_handle.advertiseService("get_bool_val", detectionCallback);
-  // ros::ServiceClient client = node_handle.serviceClient<gazebo_conveyor::ConveyorBeltControl>("/conveyor/control");
-  // gazebo_conveyor::ConveyorBeltControl conveyor;
+  ros::ServiceServer service = node_handle.advertiseService("get_bool_val", detectionCallback);
+  ros::ServiceClient client = node_handle.serviceClient<gazebo_conveyor::ConveyorBeltControl>("/conveyor/control");
+  gazebo_conveyor::ConveyorBeltControl conveyor;
 
-  // conveyor.request.power = 0.5;
+  conveyor.request.power = 0.5;
 
-  // if (client.call(conveyor))
-  // {
-  //   ROS_INFO("Success!!!!!!!!!!!!!!!!!!!!!!!!!!");
+  if (client.call(conveyor))
+  {
+    ROS_INFO("Success!!!!!!!!!!!!!!!!!!!!!!!!!!");
+  }
+  else
+  {
+    ROS_ERROR("Failed to call service conveyor_server");
+    return 1;
+  }
+
+  if(conveyor.response.success == true){
+    ROS_INFO("HO GAYA BHAI!!!!!!!!!!!!!!!!!!!");
+    // break;
+  }
+  else{
+    ROS_ERROR("NAHI HUA BHAI :(");
+    // continue;
+  }
+
   // }
-  // else
-  // {
-  //   ROS_ERROR("Failed to call service conveyor_server");
-  //   return 1;
-  // }
+  // Start the demo
+  // ^^^^^^^^^^^^^^^^^^^^^^^^^
+  // visual_tools.prompt("Press 'next' in the RvizVisualToolsGui window to start the demo");
 
-  // if(conveyor.response.success == true){
-  //   ROS_INFO("HO GAYA BHAI!!!!!!!!!!!!!!!!!!!");
-  //   // break;
-  // }
-  // else{
-  //   ROS_ERROR("NAHI HUA BHAI :(");
-  //   // continue;
-  // }
+  while(1){
+    ros::ServiceClient client = node_handle.serviceClient<gazebo_conveyor::ConveyorBeltControl>("/conveyor/control");
+    gazebo_conveyor::ConveyorBeltControl conveyor;
+    // std::cout<<x_val;
+    // ros::ServiceServer service = node_handle.advertiseService("get_bool_val", detectionCallback);
+    if (a == 1){
+      conveyor.request.power = 0.0;
+      if (client.call(conveyor))
+      {
+        ROS_INFO("Success!!!!!!!!!!!!!!!!!!!!!!!!");
+      }
+      else
+      {
+        ROS_ERROR("Failed to call service conveyor_server");
+        return 1;
+      }
+      
+      if(conveyor.response.success == true){
+        break;
+      }
+      else{
+        continue;
+      }
 
-  // // }
-  // // Start the demo
-  // // ^^^^^^^^^^^^^^^^^^^^^^^^^
-  // // visual_tools.prompt("Press 'next' in the RvizVisualToolsGui window to start the demo");
-
+    }
+  }
+  
   // while(1){
-  //   ros::ServiceClient client = node_handle.serviceClient<gazebo_conveyor::ConveyorBeltControl>("/conveyor/control");
-  //   gazebo_conveyor::ConveyorBeltControl conveyor;
-  //   // std::cout<<x_val;
-  //   // ros::ServiceServer service = node_handle.advertiseService("get_bool_val", detectionCallback);
-  //   if (a == 1){
+  //   // ros::ServiceClient client = node_handle.serviceClient<gazebo_conveyor::ConveyorBeltControl>("/conveyor/control");
+  //   // gazebo_conveyor::ConveyorBeltControl conveyor;
+
+  //   ros::Subscriber scan_sub = node_handle.subscribe("/box/scan", 1000, scanCallback);
+  //   // std::cout<<a;
+  //   if (a == true){
   //     conveyor.request.power = 0.0;
   //     if (client.call(conveyor))
   //     {
   //       ROS_INFO("Success!!!!!!!!!!!!!!!!!!!!!!!!");
-  //     }
+  //     }move_group_interface.getCurrentState()
   //     else
   //     {
   //       ROS_ERROR("Failed to call service conveyor_server");
@@ -489,164 +547,279 @@ int main(int argc, char** argv)
   //     }
 
   //   }
+
   // }
-  
-  // // while(1){
-  // //   // ros::ServiceClient client = node_handle.serviceClient<gazebo_conveyor::ConveyorBeltControl>("/conveyor/control");
-  // //   // gazebo_conveyor::ConveyorBeltControl conveyor;
-
-  // //   ros::Subscriber scan_sub = node_handle.subscribe("/box/scan", 1000, scanCallback);
-  // //   // std::cout<<a;
-  // //   if (a == true){
-  // //     conveyor.request.power = 0.0;
-  // //     if (client.call(conveyor))
-  // //     {
-  // //       ROS_INFO("Success!!!!!!!!!!!!!!!!!!!!!!!!");
-  // //     }
-  // //     else
-  // //     {
-  // //       ROS_ERROR("Failed to call service conveyor_server");
-  // //       return 1;
-  // //     }
-      
-  // //     if(conveyor.response.success == true){
-  // //       break;
-  // //     }
-  // //     else{
-  // //       continue;
-  // //     }
-
-  // //   }
-
-  // // }
-  // ros::Duration(0.5).sleep();
+  ros::Duration(0.5).sleep();
 
 
-  // // ros::ServiceClient client = node_handle.serviceClient<gazebo_conveyor::ConveyorBeltControl>("/conveyor/control");
-  // // gazebo_conveyor::ConveyorBeltControl conveyor;
-  // conveyor.request.power = 0.5;
+  // ros::ServiceClient client = node_handle.serviceClient<gazebo_conveyor::ConveyorBeltControl>("/conveyor/control");
+  // gazebo_conveyor::ConveyorBeltControl conveyor;move_group.setEndEffectorLink("eef_link");
+  conveyor.request.power = 0.5;
 
-  // if (client.call(conveyor))
-  // {
-  //   ROS_INFO("Success!!!!!!!!!!!!!!!!!!!!!!!!!!");
-  // }
-  // else
-  // {
-  //   ROS_ERROR("Failed to call service conveyor_server");
-  //   return 1;
+  if (client.call(conveyor))
+  {
+    ROS_INFO("Success!!!!!!!!!!!!!!!!!!!!!!!!!!");
+  }
+  else
+  {
+    ROS_ERROR("Failed to call service conveyor_server");
+    return 1;
+  }
+
+  if(conveyor.response.success == true){
+    ROS_INFO("HO GAYA BHAI!!!!!!!!!!!!!!!!!!!");
+    // break;
+  }
+  else{
+    ROS_ERROR("NAHI HUA BHAI :(");
+    // continue;
+  } 
+
+  // while(i<1000){
+  //   for(int j=0;j<=4;j++)
+  //   {
+  //     std::cout << dim[i] << "\t";
+  //   }
+  //   std::cout << "Depth: " << depth;
+  //   std::cout<<std::endl;
+  //   i++;
   // }
 
-  // if(conveyor.response.success == true){
-  //   ROS_INFO("HO GAYA BHAI!!!!!!!!!!!!!!!!!!!");
-  //   // break;
-  // }
-  // else{
-  //   ROS_ERROR("NAHI HUA BHAI :(");
-  //   // continue;
-  // } 
+  ROS_INFO("MIL GAYA");
 
-  // // while(i<1000){
-  // //   for(int j=0;j<=4;j++)
-  // //   {
-  // //     std::cout << dim[i] << "\t";
-  // //   }
-  // //   std::cout << "Depth: " << depth;
-  // //   std::cout<<std::endl;
-  // //   i++;
-  // // }
-
-  // ROS_INFO("MIL GAYA");
-
-  // // ros::Subscriber depth_sub = node_handle.subscribe("/depth/scan", 1000, depthCallback);
+  // ros::Subscriber depth_sub = node_handle.subscribe("/depth/scan", 1000, depthCallback);
 
 
-  // ros::Duration(36).sleep();
-  // for(int j=0;j<=4;j++)
-  // {
-  //   std::cout << dim[i] << "\t";
-  // }
-  // std::cout << "Depth: " << depth;
-  // // ros::spin();
-  // conveyor.request.power = 0.0;
-  // if (client.call(conveyor))
-  // {
-  //   ROS_INFO("Success!!!!!!!!!!!!!!!!!!!!!!!!!!");
-  // }
-  // else
-  // {
-  //   ROS_ERROR("Failed to call service conveyor_server");
-  //   return 1;
-  // }
+  ros::Duration(36).sleep();
+  for(int j=0;j<4;j++)
+  {
+    std::cout << dim[j] << "\t";
+  }
+  std::cout << "Depth: " << depth;
+  // ros::spin();
+  conveyor.request.power = 0.0;
+  if (client.call(conveyor))
+  {
+    ROS_INFO("Success!!!!!!!!!!!!!!!!!!!!!!!!!!");
+  }
+  else
+  {
+    ROS_ERROR("Failed to call service conveyor_server");
+    return 1;
+  }
 
-  // if(conveyor.response.success == true){
-  //   ROS_INFO("HO GAYA BHAI!!!!!!!!!!!!!!!!!!!");
-  //   // break;
-  // }
-  // else{
-  //   ROS_ERROR("NAHI HUA BHAI :(");
-  //   // continue;
-  // } 
-  // // visual_tools.prompt("Press 'next' in the RvizVisualToolsGui window to start the demo");
+  if(conveyor.response.success == true){
+    ROS_INFO("HO GAYA BHAI!!!!!!!!!!!!!!!!!!!");
+    // break;
+  }
+  else{
+    ROS_ERROR("NAHI HUA BHAI :(");
+    // continue;
+  } 
+  // visual_tools.prompt("Press 'next' in the RvizVisualToolsGui window to start the demo");
 
-  // // visual_tools.publishAxisLabeled(robot_start_state->getGlobalLinkTransform("Cup"), "start_pose");
-  // // visual_tools.publishText(text_pose, "Start Pose", rvt::WHITE, rvt::XLARGE);
+  // visual_tools.publishAxisLabeled(robot_start_state->getGlobalLinkTransform("Cup"), "start_pose");
+  // visual_tools.publishText(text_pose, "Start Pose", rvt::WHITE, rvt::XLARGE);
 
-  // //Adding Table Collision Object
-  // // float pose[] = {0.6,0.0,0.075};
-  // // float orientation_1[] = {0.0,0.0,0.0,1.0};
-  // // float size[] = {0.4, 0.8, 0.15};
-  // // char name[][20] = {"Table","Table_1","box"};
-  // // char Planning_group[] = "base_link";
-  // // addCollisionObject(planning_scene_interface,pose,orientation_1,size,Planning_group,name[0]);
+  //Adding Table Collision Object
+  // float pose[] = {0.6,0.0,0.075};
+  // float orientation_1[] = {0.0,0.0,0.0,1.0};
+  // float size[] = {0.4, 0.8, 0.15};
+  // char name[][20] = {"Table","Table_1","box"};
+  // char Planning_group[] = "base_link";
+  // addCollisionObject(planning_scene_interface,pose,orientation_1,size,Planning_group,name[0]);
 
-  // // // Adding Table_1 Collision Object
-  // // pose[0] = 0.0;
-  // // pose[1] = 0.6;
-  // // size[0] = 0.8;
-  // // size[1] = 0.4;
-  // // addCollisionObject(planning_scene_interface,pose,orientation_1,size,Planning_group, name[1]);
-  // // ROS_INFO_NAMED("tutorial", "Add an object into the world");
+  // // Adding Table_1 Collision Object
+  // pose[0] = 0.0;
+  // pose[1] = 0.6;
+  // size[0] = 0.8;
+  // size[1] = 0.4;
+  // addCollisionObject(planning_scene_interface,pose,orientation_1,size,Planning_group, name[1]);
+  // ROS_INFO_NAMED("tutorial", "Add an object into the world");
 
-  // //Getting to position 1 for Monocular Camera Image Processing
+  //Getting to position 1 for Monocular Camera Image Processing
+
+  ros::Subscriber box_sub = node_handle.subscribe("/box/loc", 1000, boxlocCallback);
+
   geometry_msgs::Pose target_pose1;
   tf2Scalar roll = -3.14, pitch = 0, yaw = 0;
 
   tf2::Quaternion orientation;
   orientation.setRPY(roll, pitch, yaw);
-  
+
+  ROS_INFO_STREAM("PoseStamped ps in " << pose1.header.frame_id << " is: " << pose1.pose.position.x << ", " << pose1.pose.position.y << ", " << pose1.pose.position.z);
   ROS_INFO_NAMED("tutorial", "Add an object into the world_2");
-  // target_pose1.orientation = tf2::toMsg(orientation);
-  // target_pose1.position.x = dim[1]*cos(dim[3]);
-  // target_pose1.position.y = -0.375;
-  // target_pose1.position.z = 0.589 + depth + 0.4;
+  
+  target_pose1.orientation.x = 0.000000;
+  target_pose1.orientation.y = 0.000000;
+  target_pose1.orientation.z = 0.000000;
+  target_pose1.orientation.w = 1.000000;
+  target_pose1.position.x = dim[1]*cos(dim[3])/2;
+  target_pose1.position.y = -0.375;
+  target_pose1.position.z = 0.589 + depth +0.04;
   // move_group_interface.setPoseTarget(target_pose1);
   moveit::planning_interface::MoveGroupInterface::Plan my_plan;
   // std::cout<<target_pose1;
-  // bool success = (move_group_interface.plan(my_plan) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
+
+  for(int j=0;j<4;j++)
+  {
+    std::cout << box_loc[j] << "\t";
+  }
 
   moveit::core::RobotStatePtr current_state = move_group_interface.getCurrentState();
   std::vector<double> joint_group_positions;
   current_state->copyJointGroupPositions(joint_model_group, joint_group_positions);
-  joint_group_positions[0] = 1.0; //x
-  joint_group_positions[1] = 0.5; //y
-  joint_group_positions[2] = -0.1; //z
-  joint_group_positions[3] = 0.1; //end-effector
+  joint_group_positions[0] = dim[1]*cos(dim[3])/2 - pose1.pose.position.x; //x
+  joint_group_positions[1] = 0.375 + pose1.pose.position.y; //y
+  joint_group_positions[2] = 0.589 + depth - pose1.pose.position.z + 0.035; //z
+  joint_group_positions[3] = box_loc[3]; //end-effector
+  joint_group_positions[4] = 0; //end-effector
+  // std::cout<<"\n";
+  // std::cout<<joint_group_positions;0.589 + depth - pose1.pose.position.z
   move_group_interface.setJointValueTarget(joint_group_positions);
   move_group_interface.setMaxVelocityScalingFactor(0.05);
   move_group_interface.setMaxAccelerationScalingFactor(0.05);
 
-  bool success = (move_group_interface.plan(my_plan) == moveit::core::MoveItErrorCode::SUCCESS);
-  ROS_INFO_NAMED("tutorial", "Visualizing plan 2 (joint space goal) %s", success ? "" : "FAILED");
+
+  pose[0] = dim[1]*cos(dim[3])/2;
+  pose[1] = -0.375;
+  pose[2] = 0.589 + depth/2;
+  orientation_1[0] = 0.0;
+  orientation_1[1] = 0.0;
+  orientation_1[2] = 0.0;
+  orientation_1[3] = 1.0;
+  size[0] = dim[1];
+  size[1] = dim[0];
+  size[2] = depth;
+
+  // char name[][20] = {"Table","Table_1","box"};
+  // char Planning_group[] = "base_link";
+  addCollisionObject(planning_scene_interface,pose,orientation_1,size,Planning_group,name[10]);
+  visual_tools.trigger();
+  bool success = (move_group_interface.plan(my_plan) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
+  
+
+  // geometry_msgs::Pose goal = move_group_interface.getPoseTargets();
+  // std::cout<< goal;
+
+  // ROS_INFO_STREAM("PoseStamped ps in " << goal.header.frame_id << " is: " << pose1.pose.position.x << ", " << pose1.pose.position.y << ", " << pose1.pose.position.z);
+  ROS_INFO_NAMED("tutorial", "Visualizing plan 1 (joint space goal) %s", success ? "" : "FAILED");
+
+  // // Visualizing plans
+  // // ^^^^^^^^^^^^^^^^^
+  // // We can also visualize the plan as a line with markers in RViz.
+  // ROS_INFO_NAMED("tutorial", "Visualizing plan 1 as trajectory line");
 
   visual_tools.deleteAllMarkers();
   visual_tools.publishText(text_pose, "Joint Space Goal", rvt::WHITE, rvt::XLARGE);
   visual_tools.publishTrajectoryLine(my_plan.trajectory_, joint_model_group);
   visual_tools.trigger();
-  visual_tools.prompt("Press 'next' in the RvizVisualToolsGui window to continue the demo");
+  // visual_tools.prompt("Press 'next' in the RvizVisualToolsGui window to continue the demo");
+
+  move_group_interface.move();
+  // geometry_msgs::PoseStamped pose1 = move_group_interface.getCurrentPose();
+  
+  // ROS_INFO_STREAM("PoseStamped ps in " << pose1.header.frame_id << " is: " << pose1.pose.position.x << ", " << pose1.pose.position.y << ", " << pose1.pose.position.z);
+  pick(move_group_interface,target_pose1);
+  // visual_tools.prompt("Press 'next' in the RvizVisualToolsGui window to start the demo");
+  grasp_state.data = true;
+  for(int i = 0;i < 100; i++)
+  {
+    state_pub.publish(grasp_state);
+  }
+
+  ros::ServiceClient grasp_client_attach = node_handle.serviceClient<gazebo_ros_link_attacher::Attach>("/link_attacher_node/attach");
+  gazebo_ros_link_attacher::Attach grasp_attach;
+
+  grasp_attach.request.model_name_1 = "robot";
+  grasp_attach.request.link_name_1 = "Cup";
+  grasp_attach.request.model_name_2 = "cube";
+  grasp_attach.request.link_name_2 = "base_link";
+
+  if (grasp_client_attach.call(grasp_attach))
+  {
+    ROS_INFO("Success!!!!!!!!!!!!!!!!!!!!!!!!!!");
+  }
+  else
+  {
+    ROS_ERROR("Failed to call service conveyor_server");
+    return 1;
+  }
+
+  if(grasp_attach.response.ok == true){
+    ROS_INFO("HO GAYA BHAI!!!!!!!!!!!!!!!!!!!");
+    // break;
+  }
+  else{
+    ROS_ERROR("NAHI HUA BHAI :(");
+    // continue;
+  } 
+
+  // visual_tools.prompt("Press 'next' in the RvizVisualToolsGui window to start the demo");
+  joint_group_positions[0] = 0.1; //x
+  joint_group_positions[1] = -0.65 ; //y
+  joint_group_positions[2] = 0.589 + depth - pose1.pose.position.z + 0.03; //z
+  joint_group_positions[3] = box_loc[3]; //end-effector
+  joint_group_positions[4] = 0; //end-effector
+  // std::cout<<"\n";
+  // std::cout<<joint_group_positions;
+  move_group_interface.setJointValueTarget(joint_group_positions);
+  move_group_interface.setMaxVelocityScalingFactor(0.05);
+  move_group_interface.setMaxAccelerationScalingFactor(0.05);
+
+  success = (move_group_interface.plan(my_plan) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
+  
+
+  // geometry_msgs::Pose goal = move_group_interface.getPoseTargets();
+  // std::cout<< goal;
+
+  // ROS_INFO_STREAM("PoseStamped ps in " << goal.header.frame_id << " is: " << pose1.pose.position.x << ", " << pose1.pose.position.y << ", " << pose1.pose.position.z);
+  ROS_INFO_NAMED("tutorial", "Visualizing plan 2 (joint space goal) %s", success ? "" : "FAILED");
+
+  // // Visualizing plans
+  // // ^^^^^^^^^^^^^^^^^
+  // // We can also visualize the plan as a line with markers in RViz.
+  // ROS_INFO_NAMED("tutorial", "Visualizing plan 1 as trajectory line");
+
+  visual_tools.deleteAllMarkers();
+  visual_tools.publishText(text_pose, "Joint Space Goal", rvt::WHITE, rvt::XLARGE);
+  visual_tools.publishTrajectoryLine(my_plan.trajectory_, joint_model_group);
+  visual_tools.trigger();
+  // visual_tools.prompt("Press 'next' in the RvizVisualToolsGui window to continue the demo");
 
   move_group_interface.move();
 
+  ros::ServiceClient grasp_client_detach = node_handle.serviceClient<gazebo_ros_link_attacher::Attach>("/link_attacher_node/detach");
+  gazebo_ros_link_attacher::Attach grasp_detach;
+
+  grasp_detach.request.model_name_1 = "robot";
+  grasp_detach.request.link_name_1 = "Cup";
+  grasp_detach.request.model_name_2 = "cube";
+  grasp_detach.request.link_name_2 = "base_link";
+
+  if (grasp_client_detach.call(grasp_detach))
+  {
+    ROS_INFO("Success!!!!!!!!!!!!!!!!!!!!!!!!!!");
+  }
+  else
+  {
+    ROS_ERROR("Failed to call service conveyor_server");
+    return 1;
+  }
+
+  if(grasp_detach.response.ok == true){
+    ROS_INFO("HO GAYA BHAI!!!!!!!!!!!!!!!!!!!");
+    // break;
+  }
+  else{
+    ROS_ERROR("NAHI HUA BHAI :(");
+    // continue;
+  } 
+
   visual_tools.prompt("Press 'next' in the RvizVisualToolsGui window to start the demo");
+
+
+
   ros::Subscriber sub_1 = node_handle.subscribe("/box/Coordinate_Mono", 1000, chatterCallback_mono);
 
   // visual_tools.prompt("Press 'next' in the RvizVisualToolsGui window to continue the demo");
@@ -730,7 +903,7 @@ int main(int argc, char** argv)
   
   visual_tools.publishAxisLabeled(target_pose1, "pose2");
   visual_tools.publishText(text_pose, "Pose Goal", rvt::WHITE, rvt::XLARGE);
-  visual_tools.publishTrajectoryLine(my_plan.trajectory_, joint_model_group);
+  // visual_tools.publishTrajectoryLine(my_plan.trajectory_, joint_model_group);
   visual_tools.trigger();
 
   ros::shutdown();

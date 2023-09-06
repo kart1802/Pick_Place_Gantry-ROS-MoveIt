@@ -12,6 +12,8 @@ from sensor_msgs.msg import Image, LaserScan
 scan_trigger = False
 depth_val = [0.0,0.0]
 temp = 0.0
+box_dim = [0.0,0.0,0.0,0.0]
+transf = []
 
 def detect_coordinate(x, y, w, h, Average_depth,hfov_rad):
   # global Average_depth, x, y, w, h
@@ -35,7 +37,7 @@ def detect_coordinate(x, y, w, h, Average_depth,hfov_rad):
   return(err_x_m,err_y_m, err_h, err_w)
 
 def estimate_depth(depth_image):
-
+    global box_dim
     depth_image_8bit = cv2.cvtColor(depth_image, cv2.COLOR_BGR2GRAY)
     # print("Checking image")
     dim_pub = rospy.Publisher("/box/dim",Float64MultiArray,queue_size=10)
@@ -105,6 +107,7 @@ def estimate_depth(depth_image):
     dimension.data = dim
     print(dimension)
     if 270 < y < 280:
+      box_dim = dim
       dim_pub.publish(dimension)
       len_pub.publish(w)
       print(dimension)
@@ -132,11 +135,14 @@ def callback_scan(data):
     scan_trigger = False
 
 def depth_state(msg):
-    global depth_val,temp
+    global depth_val,temp,transf
     range_val = msg.ranges[0]
+
     try:
         scan = rospy.Publisher("/depth/scan", Float64, queue_size =10)
+        loc = rospy.Publisher('/box/loc',Float64MultiArray,queue_size=1)
         num = Float64()
+        box_loc = Float64MultiArray()
     except(Exception):
         print(Exception)
     
@@ -146,11 +152,18 @@ def depth_state(msg):
       d = abs(depth_val[1] - depth_val[0])
       num.data = d
       scan.publish(num)
+      x = box_dim[1]*math.cos(box_dim[3]) - transf[0] 
+      y = 0.375 + transf[1] 
+      z = 0.589 + d - transf[2] + 0.02
+      w = 0
+      box_loc.data = [x,y,z,w]
+      loc.publish(box_loc)
     else:
       temp = range_val
-
+    
 
 def receive_message():
+    global transf
     rospy.init_node("Box_Dimension")
     rospy.Subscriber("/camera1/image_raw",Image, callback_cam)
     rospy.Subscriber("/box/scan", Bool, callback_scan)
@@ -160,6 +173,8 @@ def receive_message():
 
     while not rospy.is_shutdown():
         try:
+            trans = tfBuffer.lookup_transform('world','Cup',rospy.Time())
+            transf = [trans.transform.translation.x,trans.transform.translation.y,trans.transform.translation.z]
             rospy.Subscriber('/laser/scan', LaserScan, depth_state)
             rate.sleep()
         except (tf2_ros.LookupException, tf2_ros.ConnectivityException, tf2_ros.ExtrapolationException):
