@@ -520,7 +520,7 @@
         <parent link="Z_Rot" />
         <child link="Cup" />
         <axis xyz="0 0 1" />
-        <limit lower="-3.14" upper="3.14" effort="5" velocity="1" />
+        <limit lower="-3.14" upper="3.14" effort="5" velocity="0" />
     </joint>
   <joint name="camera_joint" type="fixed">
     <axis xyz="0 1 0" />
