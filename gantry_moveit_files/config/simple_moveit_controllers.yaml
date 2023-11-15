@@ -9,3 +9,11 @@ controller_list:
       - Z_Joint
       - Z_Rot_Joint
       - Cup_Joint
+      # - dummy_Joint
+
+  # - name: cup_controller
+  #   action_ns: follow_joint_trajectory
+  #   type: FollowJointTrajectory
+  #   default: True
+  #   joints:
+  #     - Cup_Joint

@@ -6,8 +6,17 @@ controller_list:
       - Y_Joint
       - Z_Joint
       - Z_Rot_Joint
+      # - dummy_Joint
       - Cup_Joint
+
+  # - name: fake_cup_controller
+  #   type: $(arg fake_execution_type)
+  #   joints:
+  #     - Cup_Joint
 
 initial:  # Define initial robot poses per group
   - group: Gantry
     pose: rest
+  # - group: Gantry_end
+  #   pose: open
+

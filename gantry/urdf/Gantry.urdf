@@ -492,11 +492,40 @@
         <axis xyz="0 0 1" />
         <limit lower="-3.14" upper="3.14" effort="5" velocity="1" />
     </joint>
+  <!-- <link name="dummy">
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+    <box size="0.001 0.001 0.001"/>
+      </geometry>
+    </collision>
+
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+    <box size="0.01 0.01 0.01"/>
+      </geometry>
+      
+    </visual>
+
+    <inertial>
+      <mass value="1e-2" />
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <inertia ixx="1e-1" ixy="0" ixz="0" iyy="1e-1" iyz="0" izz="1e-1" />
+    </inertial>
+  </link>   
+    <joint name="dummy_Joint" type="prismatic">
+        <origin xyz="0.0 -0.002 -0.50" rpy="0 0 0" />
+        <parent link="Z_Rot" />
+        <child link="dummy" />
+        <axis xyz="0 0 1" />
+        <limit lower="-0.05" upper="0.05" effort="5" velocity="1" />
+    </joint> -->
     <link name="Cup">        
         <inertial>
             <origin xyz="-2.6593E-06 5.7892E-06 0.0070718" rpy="0 0 0" />
-            <mass value="0.0020128" />
-            <inertia ixx="6.7515E-08" ixy="-2.2805E-12" ixz="1.831E-12" iyy="6.7541E-08" iyz="-9.4715E-13" izz="6.9139E-08" />
+            <mass value="0.050128" />
+            <inertia ixx="6.7515E-02" ixy="-2.2805E-12" ixz="1.831E-12" iyy="6.7541E-02" iyz="-9.4715E-13" izz="6.9139E-02" />
         </inertial>
 
         <visual>
@@ -516,12 +545,21 @@
         </collision>
     </link>
     <joint name="Cup_Joint" type="revolute">
-        <origin xyz="-0.0 -0.002 -0.50" rpy="3.1416 -0.0 0" />
+        <origin xyz="0.0 -0.0015 -0.5" rpy="3.1416 -0.0 0" />
         <parent link="Z_Rot" />
+        <!-- <parent link="dummy" /> -->
         <child link="Cup" />
         <axis xyz="0 0 1" />
         <limit lower="-3.14" upper="3.14" effort="5" velocity="0" />
     </joint>
+    <!-- <joint name="Cup_Joint" type="prismatic">
+        <origin xyz="0.0 0.0 0.0" rpy="3.1416 -0.0 0" />
+        <parent link="Z_Rot" />
+        <parent link="dummy" /> 
+        <child link="Cup" />
+        <axis xyz="0 1 0" />
+        <limit lower="-0.05" upper="0.25" effort="5" velocity="1" />
+    </joint> -->
   <joint name="camera_joint" type="fixed">
     <axis xyz="0 1 0" />
     <origin xyz="1.8 -0.375 1.0" rpy="0 1.5708 0"/>
@@ -650,6 +688,16 @@
             <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
         </joint>
         <actuator name="Z_Rot_Joint_motor">
+            <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+            <mechanicalReduction>1</mechanicalReduction>
+        </actuator>
+    </transmission>
+    <transmission name="trans_dummy_Joint">
+        <type>transmission_interface/SimpleTransmission</type>
+        <joint name="dummy_Joint">
+            <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+        </joint>
+        <actuator name="dummy_Joint_motor">
             <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
             <mechanicalReduction>1</mechanicalReduction>
         </actuator>

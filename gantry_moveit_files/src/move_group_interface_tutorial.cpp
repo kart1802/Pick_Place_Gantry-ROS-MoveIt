@@ -436,7 +436,7 @@ int main(int argc, char** argv)
 
   size[0] = 0.6;
   size[1] = 0.02;
-  size[2] = 0.25;
+  size[2] = 0.225;
   pose[0] = 0.4;
   pose[1] = 0.125;
   pose[2] = 0.69;
@@ -693,40 +693,7 @@ int main(int argc, char** argv)
 
   // char name[][20] = {"Table","Table_1","box"};
   // char Planning_group[] = "base_link";
-  std::vector<moveit_msgs::CollisionObject> collision_objects;
-  collision_objects.resize(1);
-
-  // Add the first table where the cube will originally be kept.
-  collision_objects[0].id = name[10];
-  std::vector< std::string > object_id;
-  object_id.resize(1);
-  object_id[0] = collision_objects[0].id;
-  object_id.push_back(collision_objects[0].id);
-  collision_objects[0].header.frame_id = Planning_group;
-
-  /* Define the primitive and its dimensions. */
-  collision_objects[0].primitives.resize(1);
-  collision_objects[0].primitives[0].type = collision_objects[0].primitives[0].BOX;
-  collision_objects[0].primitives[0].dimensions.resize(3);
-  collision_objects[0].primitives[0].dimensions[0] = size[0];
-  collision_objects[0].primitives[0].dimensions[1] = size[1];
-  collision_objects[0].primitives[0].dimensions[2] = size[2];
-
-  /* Define the pose of the table. */
-  collision_objects[0].primitive_poses.resize(1);
-  collision_objects[0].primitive_poses[0].position.x = pose[0];
-  collision_objects[0].primitive_poses[0].position.y = pose[1];
-  collision_objects[0].primitive_poses[0].position.z = pose[2];
-  collision_objects[0].primitive_poses[0].orientation.w = orientation_1[3];
-  collision_objects[0].primitive_poses[0].orientation.x = orientation_1[0];
-  collision_objects[0].primitive_poses[0].orientation.y = orientation_1[1];
-  collision_objects[0].primitive_poses[0].orientation.z = orientation_1[2];
-  // END_SUB_TUTORIAL
-
-  collision_objects[0].operation = collision_objects[0].ADD;
-
-  planning_scene_interface.applyCollisionObjects(collision_objects);
-  // addCollisionObject(planning_scene_interface,pose,orientation_1,size,Planning_group,name[10]);
+  addCollisionObject(planning_scene_interface,pose,orientation_1,size,Planning_group,name[10]);
   // visual_tools.trigger();
   bool success = (move_group_interface.plan(my_plan) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
   
@@ -765,7 +732,7 @@ int main(int argc, char** argv)
   // object_to_attach.id = "cube";
   shape_msgs::SolidPrimitive primitive;
 
-  // std::vector<moveit_msgs::CollisionObject> collision_objects;
+  std::vector<moveit_msgs::CollisionObject> collision_objects;
   geometry_msgs::Pose target_pose1;
   tf2Scalar roll = 0, pitch = 0, yaw = 0;
 
@@ -781,7 +748,7 @@ int main(int argc, char** argv)
   // target_pose1.position.z = 0.589 + depth/2;
   target_pose1.position.x = 0;
   target_pose1.position.y = 0;
-  target_pose1.position.z = depth/2 + 0.035;
+  target_pose1.position.z = 0;
 
   for(int j=0;j<4;j++)
   {
@@ -799,9 +766,9 @@ int main(int argc, char** argv)
   object_to_attach.primitives.push_back(primitive);
   object_to_attach.primitive_poses.push_back(target_pose1);
   object_to_attach.operation = object_to_attach.ADD;
-  // collision_objects.push_back(object_to_attach);
-  // planning_scene_interface.removeCollisionObjects(object_id);
-  // planning_scene_interface.applyCollisionObject(object_to_attach);
+  collision_objects.push_back(object_to_attach);
+  // planning_scene_interface.removeCollisionObjects("cube1");
+  planning_scene_interface.applyCollisionObject(object_to_attach);
   // planning_scene_interface.removeCollisionObjects(primitive);
 
   // std::vector<moveit_msgs::CollisionObject> collision_objects;
@@ -828,7 +795,7 @@ int main(int argc, char** argv)
   planning_scene_interface.addCollisionObjects(collision_objects);
 
   ROS_INFO_NAMED("tutorial", "Attach the object to the robot");
-  move_group_interface.attachObject(collision_objects[0].id, "Z_Rot", {"Cup"});
+  move_group_interface.attachObject(object_to_attach.id, "Z_Rot", {"Cup"});
 
   visual_tools.publishText(text_pose, "Object attached to robot", rvt::WHITE, rvt::XLARGE);
   visual_tools.trigger();
@@ -906,8 +873,6 @@ int main(int argc, char** argv)
 
   move_group_interface.move();
 
-  move_group_interface.detachObject(collision_objects[0].id);
-
   ros::ServiceClient grasp_client_detach = node_handle.serviceClient<gazebo_ros_link_attacher::Attach>("/link_attacher_node/detach");
   gazebo_ros_link_attacher::Attach grasp_detach;
 
@@ -934,39 +899,6 @@ int main(int argc, char** argv)
     ROS_ERROR("NAHI HUA BHAI :(");
     // continue;
   } 
-
-  joint_group_positions[0] = 0.0; //x
-  joint_group_positions[1] = 0.0 ; //y
-  joint_group_positions[2] = 0.0; //z
-  joint_group_positions[3] = box_loc[3]; //end-effector
-  joint_group_positions[4] = 0; //end-effector
-  // std::cout<<"\n";
-  // std::cout<<joint_group_positions;
-  move_group_interface.setJointValueTarget(joint_group_positions);
-  move_group_interface.setMaxVelocityScalingFactor(0.05);
-  move_group_interface.setMaxAccelerationScalingFactor(0.05);
-
-  success = (move_group_interface.plan(my_plan) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
-  
-
-  // geometry_msgs::Pose goal = move_group_interface.getPoseTargets();
-  // std::cout<< goal;
-
-  // ROS_INFO_STREAM("PoseStamped ps in " << goal.header.frame_id << " is: " << pose1.pose.position.x << ", " << pose1.pose.position.y << ", " << pose1.pose.position.z);
-  ROS_INFO_NAMED("tutorial", "Visualizing plan 2 (joint space goal) %s", success ? "" : "FAILED");
-
-  // // Visualizing plans
-  // // ^^^^^^^^^^^^^^^^^
-  // // We can also visualize the plan as a line with markers in RViz.
-  // ROS_INFO_NAMED("tutorial", "Visualizing plan 1 as trajectory line");
-
-  visual_tools.deleteAllMarkers();
-  visual_tools.publishText(text_pose, "Joint Space Goal", rvt::WHITE, rvt::XLARGE);
-  visual_tools.publishTrajectoryLine(my_plan.trajectory_, joint_model_group);
-  visual_tools.trigger();
-  // visual_tools.prompt("Press 'next' in the RvizVisualToolsGui window to continue the demo");
-
-  move_group_interface.move();  
 
   visual_tools.prompt("Press 'next' in the RvizVisualToolsGui window to start the demo");
 

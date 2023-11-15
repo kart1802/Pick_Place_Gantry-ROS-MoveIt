@@ -15,12 +15,14 @@
         <link name="Y_Motion"/>
         <link name="Z_Motion"/>
         <link name="Z_Rot"/>
+        <!-- <link name="dummy"/> -->
         <link name="Cup"/>
         <joint name="gantry_virtual"/>
         <joint name="X_Joint"/>
         <joint name="Y_Joint"/>
         <joint name="Z_Joint"/>
         <joint name="Z_Rot_Joint"/>
+        <!-- <joint name="dummy_Joint"/> -->
         <joint name="Cup_Joint"/>
     </group>
     <group name="Gantry_end">
@@ -33,6 +35,7 @@
         <joint name="Y_Joint" value="0"/>
         <joint name="Z_Joint" value="0"/>
         <joint name="Z_Rot_Joint" value="0"/>
+        <!-- <joint name="dummy_Joint" value="0"/> -->
         <joint name="Cup_Joint" value="0"/>
 
     </group_state>
@@ -41,6 +44,7 @@
         <joint name="Y_Joint" value="0.2939"/>
         <joint name="Z_Joint" value="-0.12"/>
         <joint name="Z_Rot_Joint" value="1.5787"/>
+        <!-- <joint name="dummy_Joint" value="0"/> -->
         <joint name="Cup_Joint" value="0"/>
 
     </group_state>
@@ -49,6 +53,7 @@
         <joint name="Y_Joint" value="0"/>
         <joint name="Z_Joint" value="0.158"/>
         <joint name="Z_Rot_Joint" value="1.5787"/>
+        <!-- <joint name="dummy_Joint" value="0"/> -->
         <joint name="Cup_Joint" value="0"/>
 
     </group_state>
@@ -57,9 +62,20 @@
         <joint name="Y_Joint" value="-0.3558"/>
         <joint name="Z_Joint" value="-0.12"/>
         <joint name="Z_Rot_Joint" value="1.5787"/>
+        <!-- <joint name="dummy_Joint" value="0"/> -->
         <joint name="Cup_Joint" value="0"/>
 
     </group_state>
+
+
+    <!-- <group_state name="close" group="Gantry_end">
+        <joint name="Cup_Joint" value="0"/>
+    </group_state>
+
+    <group_state name="open" group="Gantry_end">
+        <joint name="Cup_Joint" value="0.05"/>
+
+    </group_state> -->
     <!--END EFFECTOR: Purpose: Represent information about an end effector.-->
     <end_effector name="Gantry_endeff" parent_link="Cup" group="Gantry_end"/>
     <!--VIRTUAL JOINT: Purpose: this element defines a virtual joint between a robot link and an external frame of reference (considered fixed with respect to the robot)-->
@@ -70,6 +86,12 @@
     <disable_collisions link1="Cup" link2="Z_Motion" reason="Never"/>
     <disable_collisions link1="Cup" link2="Z_Rot" reason="Adjacent"/>
     <disable_collisions link1="Cup" link2="base_link" reason="Never"/>
+    <!-- <disable_collisions link1="Cup" link2="dummy" reason="Never"/> -->
+    <!-- <disable_collisions link1="dummy" link2="X_Motion" reason="Never"/>
+    <disable_collisions link1="dummy" link2="Y_Motion" reason="Never"/>
+    <disable_collisions link1="dummy" link2="Z_Motion" reason="Never"/>
+    <disable_collisions link1="dummy" link2="Z_Rot" reason="Adjacent"/>
+    <disable_collisions link1="dummy" link2="base_link" reason="Never"/> -->
     <disable_collisions link1="X_Motion" link2="Y_Motion" reason="Adjacent"/>
     <disable_collisions link1="X_Motion" link2="Z_Motion" reason="Never"/>
     <disable_collisions link1="X_Motion" link2="Z_Rot" reason="Never"/>

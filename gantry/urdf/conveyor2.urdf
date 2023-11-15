@@ -61,7 +61,7 @@
 		<inertial>
 			<origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
 			<mass value="100"/>
-			<inertia ixx="0.0" ixy="0.0" ixz="0.0" iyy="0.0" iyz="0.0" izz="0.0"/>
+			<inertia ixx="1.0" ixy="0.0" ixz="0.0" iyy="1.0" iyz="0.0" izz="1.0"/>
 		</inertial>
 		<!-- <visual>
 			<origin xyz="0.0 0.0 0.0005" rpy="0.0 0.0 0.0"/>
@@ -83,8 +83,8 @@
         
 	<inertial>
             <origin xyz="-2.6593E-06 5.7892E-06 0.0070718" rpy="0 0 0" />
-            <mass value="0.0020128" />
-            <inertia ixx="6.7515E-08" ixy="-2.2805E-12" ixz="1.831E-12" iyy="6.7541E-08" iyz="-9.4715E-13" izz="6.9139E-08" />
+            <mass value="20.128" />
+            <inertia ixx="6.7515" ixy="-2.2805" ixz="1.831" iyy="6.7541" iyz="-9.4715" izz="6.9139" />
         </inertial>
 
         <visual>
@@ -96,12 +96,12 @@
                 <color rgba="0.79216 0.81961 0.93333 1" />
             </material>
         </visual>
-        <collision>
+        <!-- <collision>
             <origin xyz="0 0 0" rpy="0 0 0" />
             <geometry>
                 <mesh filename="package://gantry/meshes/Big_box.dae" />
             </geometry>
-        </collision>
+        </collision> -->
     </link>
     <joint name="Big_box_Joint" type="fixed">
         <origin xyz="0.4 0.325 0.69" rpy="0 -1.5708 1.5708" />
@@ -113,8 +113,8 @@
         
 	<inertial>
             <origin xyz="-2.6593E-06 5.7892E-06 0.0070718" rpy="0 0 0" />
-            <mass value="0.0020128" />
-            <inertia ixx="6.7515E-08" ixy="-2.2805E-12" ixz="1.831E-12" iyy="6.7541E-08" iyz="-9.4715E-13" izz="6.9139E-08" />
+            <mass value="20.128" />
+            <inertia ixx="6.7515" ixy="-2.2805" ixz="1.831" iyy="6.7541" iyz="-9.4715" izz="6.9139" />
         </inertial>
 
         <visual>
@@ -126,12 +126,12 @@
                 <color rgba="0.79216 0.81961 0.93333 1" />
             </material>
         </visual>
-        <collision>
+        <!-- <collision>
             <origin xyz="0 0 0" rpy="0 0 0" />
             <geometry>
                 <mesh filename="package://gantry/meshes/Big_box.dae" />
             </geometry>
-        </collision>
+        </collision> -->
     </link>
     <joint name="Big_box_Joint2" type="fixed">
         <origin xyz="-0.275 0.325 0.69" rpy="0 -1.5708 1.5708" />
